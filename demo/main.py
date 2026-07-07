@@ -14,7 +14,7 @@ import cv2
 # 路径
 # ---------------------------------------------------------------------------
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL_PATH = BASE_DIR.parent / "dataset" / "runs" / "detect" / "oxford_pets" / "weights" / "best.pt"
+MODEL_PATH = BASE_DIR.parent / "best.pt"
 UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
@@ -69,20 +69,18 @@ async def detect(file: UploadFile = File(...)):
     with open(save_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
-    # YOLO 检测
-    results = model(str(save_path))
+    # YOLO 检测（降低iou避免多只猫被合并成一个框）
+    results = model(str(save_path), conf=0.25, iou=0.4, max_det=100)
     result = results[0]
 
-    # --- 标注图 ---
+    # --- 标注图 (plot返回BGR, cv2.imencode直接编码, 浏览器正常显示) ---
     annotated = result.plot(line_width=2, font_size=14)
-    annotated_rgb = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
-    _, buf = cv2.imencode(".jpg", annotated_rgb, [cv2.IMWRITE_JPEG_QUALITY, 92])
+    _, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 92])
     img_b64 = base64.b64encode(buf).decode("utf-8")
 
-    # --- 原始图 base64 ---
+    # --- 原始图 base64 (cv2.imread返回BGR, 直接编码即可) ---
     orig = cv2.imread(str(save_path))
-    orig_rgb = cv2.cvtColor(orig, cv2.COLOR_BGR2RGB)
-    _, buf_orig = cv2.imencode(".jpg", orig_rgb, [cv2.IMWRITE_JPEG_QUALITY, 92])
+    _, buf_orig = cv2.imencode(".jpg", orig, [cv2.IMWRITE_JPEG_QUALITY, 92])
     orig_b64 = base64.b64encode(buf_orig).decode("utf-8")
 
     # --- 检测详情 ---
@@ -109,4 +107,4 @@ async def detect(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

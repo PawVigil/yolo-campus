@@ -23,7 +23,7 @@
 cd demo
 pip install fastapi uvicorn ultralytics opencv-python
 python main.py
-# 打开 http://localhost:8000
+# 打开 http://localhost:8001
 ```
 
 ## 项目结构
