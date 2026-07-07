@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.venv/
+venv/
+
+# YOLO
+runs/
+*.pt
+!best.pt
+
+# Report
+report.aux
+report.log
+report.out
+report.tex
+
+# Demo uploads
+demo/uploads/
+demo/server.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Sensitive
+*.env
