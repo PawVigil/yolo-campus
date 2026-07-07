@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.venv/
+venv/
+
+# YOLO
+runs/
+*.pt
+!best.pt
+
+# Report
+report.aux
+report.log
+report.out
+report.tex
+
+# Demo uploads
+demo/uploads/
+demo/server.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Internal drafts (not for upload)
+项目完整方案.md
+选题及团队组建报告.pdf
+大一项目选题2026.docx
+大一项目选题_纯文本.txt
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Sensitive
+*.env
