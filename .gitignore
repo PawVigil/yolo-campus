@@ -29,5 +29,11 @@ demo/server.log
 Thumbs.db
 .DS_Store
 
+# Internal drafts (not for upload)
+项目完整方案.md
+选题及团队组建报告.pdf
+大一项目选题2026.docx
+大一项目选题_纯文本.txt
+
 # Sensitive
 *.env
