@@ -28,7 +28,7 @@
               <div class="card-bottom">
                 <span v-if="item.nickname" class="card-nickname">{{ item.nickname }}</span>
                 <span class="card-time">{{ fmtTime(item.created_at) }}</span>
-                <span class="card-comments">💬 {{ item.comments.length }}</span>
+                <span class="card-comments">💬 {{ item.comments?.length || 0 }}</span>
               </div>
             </div>
           </n-card>
@@ -57,8 +57,8 @@
 
         <!-- 评论区 -->
         <div class="comments-section">
-          <h4>💬 评论（{{ detailItem.comments.length }}）</h4>
-          <div v-if="detailItem.comments.length === 0" class="no-comments">暂无评论</div>
+          <h4>💬 评论（{{ detailItem.comments?.length || 0 }}）</h4>
+          <div v-if="!detailItem.comments?.length" class="no-comments">暂无评论</div>
           <div v-for="c in detailItem.comments" :key="c.id" class="comment-item">
             <span class="comment-nick">{{ c.nickname || '匿名' }}</span>
             <span class="comment-text">{{ c.text }}</span>
@@ -178,9 +178,9 @@ async function doUpload() {
   uploading.value = true
   try {
     const fd = new FormData()
-    // 后端目前只支持单张图片，取第一张
-    if (uploadFiles.value.length > 0) {
-      fd.append('image', uploadFiles.value[0])
+    // 多图上传
+    for (const f of uploadFiles.value) {
+      fd.append('images', f)
     }
     if (uploadForm.location_id) fd.append('location_id', String(uploadForm.location_id))
     if (uploadForm.description) fd.append('description', uploadForm.description)

@@ -18,6 +18,7 @@
           </n-form>
 
           <n-upload
+            ref="uploadRef"
             :multiple="false"
             accept="image/jpeg,image/png"
             :max="1"
@@ -133,6 +134,7 @@ const selectedLocation = ref(null)
 const locationOptions = ref([])
 const loadingLocations = ref(false)
 const uploadFile = ref(null)
+const uploadRef = ref(null)
 const detecting = ref(false)
 const saving = ref(false)
 const saveSuccess = ref(false)
@@ -155,6 +157,11 @@ function getEmoji(breedEn) {
   if (!breedEn) return '🐾'
   const key = breedEn.replace(/\s+/g, '_')
   return emojiMap[key] || (breedEn.toLowerCase().includes('dog') || breedEn.toLowerCase().includes('bulldog') || breedEn.toLowerCase().includes('terrier') ? '🐕' : '🐱')
+}
+
+function getLocalTime() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`
 }
 
 function formatSize(bytes) {
@@ -197,7 +204,8 @@ async function doSave() {
     const res = await saveDetection({
       location_id: selectedLocation.value,
       image_path: detectResult.value.image_url,
-      detect_time: new Date().toISOString(),
+      annotated_path: detectResult.value.annotated_url,
+      detect_time: getLocalTime(),
       result_json: JSON.stringify(detectResult.value.animals),
       total_animals: detectResult.value.total,
     })
@@ -215,6 +223,7 @@ async function doSave() {
 function resetDetect() {
   detectResult.value = null
   uploadFile.value = null
+  uploadRef.value?.clear()
   saveSuccess.value = false
   savedId.value = null
 }

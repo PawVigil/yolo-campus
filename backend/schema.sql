@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS detection (
     location_id     INTEGER NOT NULL,
     user_id         INTEGER NOT NULL,
     image_path      TEXT    NOT NULL,        -- 上传图片路径
+    annotated_path  TEXT    NOT NULL DEFAULT '', -- 标注图路径
     detect_time     TEXT    NOT NULL,        -- ISO 8601 拍摄/检测时间
     result_json     TEXT    NOT NULL,        -- YOLO检测结果JSON
     total_animals   INTEGER NOT NULL DEFAULT 0,

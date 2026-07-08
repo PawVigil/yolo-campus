@@ -4,7 +4,7 @@ import axios from 'axios'
 const USE_MOCK = false
 
 const apiClient = axios.create({
-  baseURL: USE_MOCK ? '' : 'http://localhost:8000',
+  baseURL: '', // 走 Vite 代理，避免跨域
   timeout: 30000,
 })
 

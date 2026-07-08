@@ -4,7 +4,8 @@
 
     <n-layout-content class="breeds-content">
       <n-spin :show="loading">
-        <template v-if="!loading">
+        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <template v-else-if="!loading">
           <div class="hero">
             <h1>🐾 校园动物品种百科</h1>
             <p>
@@ -53,6 +54,7 @@ const activeTab = ref('cat')
 const loading = ref(true)
 const breedData = ref({})
 const breedStats = ref({})
+const error = ref(false)
 
 
 const catKeys = ['Abyssinian','Bengal','Birman','Bombay','British_Shorthair','Egyptian_Mau','Maine_Coon','Persian','Ragdoll','Russian_Blue','Siamese','Sphynx']
@@ -80,6 +82,7 @@ const detectedCats = computed(() => cats.value.filter(b => b.detectCount > 0).le
 const detectedDogs = computed(() => dogs.value.filter(b => b.detectCount > 0).length)
 
 onMounted(async () => {
+  error.value = false
   try {
     const [info, stats] = await Promise.all([
       fetch('/breed_info.json').then(r => r.json()),
@@ -89,6 +92,7 @@ onMounted(async () => {
     breedStats.value = stats.stats || {}
   } catch (e) {
     console.error('加载失败', e)
+    error.value = true
   } finally {
     loading.value = false
   }
