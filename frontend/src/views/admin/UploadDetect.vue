@@ -159,6 +159,11 @@ function getEmoji(breedEn) {
   return emojiMap[key] || (breedEn.toLowerCase().includes('dog') || breedEn.toLowerCase().includes('bulldog') || breedEn.toLowerCase().includes('terrier') ? '🐕' : '🐱')
 }
 
+function getLocalTime() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`
+}
+
 function formatSize(bytes) {
   if (bytes < 1024) return bytes + 'B'
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB'
@@ -199,7 +204,8 @@ async function doSave() {
     const res = await saveDetection({
       location_id: selectedLocation.value,
       image_path: detectResult.value.image_url,
-      detect_time: new Date().toISOString(),
+      annotated_path: detectResult.value.annotated_url,
+      detect_time: getLocalTime(),
       result_json: JSON.stringify(detectResult.value.animals),
       total_animals: detectResult.value.total,
     })

@@ -32,7 +32,6 @@
         <n-table v-else :single-line="false" :bordered="false" size="small">
           <thead>
             <tr>
-              <th style="width:60px">ID</th>
               <th style="width:80px">地点</th>
               <th style="min-width:100px">品种摘要</th>
               <th style="width:80px">数量</th>
@@ -42,13 +41,12 @@
           </thead>
           <tbody>
             <tr v-for="item in items" :key="item.id" class="table-row">
-              <td>{{ item.id }}</td>
               <td><LocationBadge :name="item.location_name" /></td>
               <td>
                 <n-tag v-for="b in parseBreeds(item.breed_summary)" :key="b" size="tiny" round class="breed-tag">{{ b }}</n-tag>
               </td>
               <td>{{ item.total_animals }}</td>
-              <td class="time-cell">{{ item.detect_time }}</td>
+              <td class="time-cell">{{ fmtDetectTime(item.detect_time) }}</td>
               <td>
                 <n-button-group>
                   <n-button size="tiny" type="info" @click="openDetail(item.id)">详情</n-button>
@@ -75,32 +73,34 @@
     </n-card>
 
     <!-- 详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" title="📋 检测记录详情" style="max-width: 900px" :mask-closable="true">
-      <n-spin :show="detailLoading">
-        <template v-if="!detailLoading && detailData">
-          <DetectionResult
-            :image-url="detailData.image_url"
-            :annotated-url="detailData.annotated_url"
-            :animals="detailData.animals || []"
-          />
-          <n-divider />
-          <div class="detail-meta">
-            <LocationBadge :name="detailData.location_name" />
-            <n-tag type="info" round>检测时间：{{ detailData.detect_time }}</n-tag>
-            <n-tag type="success" round>总计 {{ detailData.total_animals }} 只</n-tag>
-            <n-tag round>记录编号：#{{ detailData.id }}</n-tag>
-          </div>
-          <n-divider />
-          <n-text depth="3">完整 JSON：</n-text>
-          <n-code :code="JSON.stringify(detailData.animals || [], null, 2)" language="json" word-wrap />
-        </template>
-      </n-spin>
+    <n-modal v-model:show="showDetail" preset="card" title="📋 检测记录详情" style="max-width: 900px; width: 800px" :mask-closable="true">
+      <div style="min-height: 360px">
+        <n-spin :show="detailLoading">
+          <template v-if="detailData">
+            <DetectionResult
+              :image-url="detailData.image_url"
+              :annotated-url="detailData.annotated_url"
+              :animals="detailData.animals || []"
+            />
+            <n-divider />
+            <div class="detail-meta">
+              <LocationBadge :name="detailData.location_name" />
+              <n-tag type="info" round>检测时间：{{ fmtDetectTime(detailData.detect_time) }}</n-tag>
+              <n-tag type="success" round>总计 {{ detailData.total_animals }} 只</n-tag>
+              <n-tag round>记录编号：#{{ detailData.id }}</n-tag>
+            </div>
+            <n-divider />
+            <n-text depth="3">完整 JSON：</n-text>
+            <n-code :code="JSON.stringify(detailData.animals || [], null, 2)" language="json" word-wrap />
+          </template>
+        </n-spin>
+      </div>
     </n-modal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
 import DetectionResult from '@/components/DetectionResult.vue'
@@ -177,9 +177,9 @@ function onPageSizeChange(size) {
 }
 
 async function openDetail(id) {
-  showDetail.value = true
   detailLoading.value = true
   detailData.value = null
+  showDetail.value = true
   try {
     detailData.value = await getDetectionById(id)
   } catch (e) {
@@ -189,6 +189,10 @@ async function openDetail(id) {
     detailLoading.value = false
   }
 }
+
+watch(showDetail, (v) => {
+  if (!v) detailData.value = null
+})
 
 async function doDelete(id) {
   if (!window.confirm(`确定要删除检测记录 #${id} 吗？此操作不可恢复。`)) return
@@ -202,17 +206,32 @@ async function doDelete(id) {
   }
 }
 
+function fmtDetectTime(t) {
+  if (!t) return ''
+  // 兼容 UTC 格式: "2026-07-08T12:54:00.000Z" 和 DB 格式: "2026-7-8 20:54:30"
+  if (t.includes('T')) {
+    const d = new Date(t)
+    if (!isNaN(d.getTime())) {
+      // 转为本地时间显示
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`
+    }
+  }
+  return t // 已经是格式化过的字符串，直接返回
+}
+
 function parseBreeds(summary) {
   if (!summary) return []
   return summary.split(',').map((s) => s.trim()).filter(Boolean)
 }
 
 onMounted(async () => {
-  await fetchRecords()
-  try {
-    const res = await getLocations()
-    locationOptions.value = (res.items || []).map((l) => ({ label: l.name, value: l.id }))
-  } catch { /* ignore */ }
+  const loadLocations = async () => {
+    try {
+      const res = await getLocations()
+      locationOptions.value = (res.items || []).map((l) => ({ label: l.name, value: l.id }))
+    } catch { /* ignore */ }
+  }
+  await Promise.all([fetchRecords(), loadLocations()])
 })
 </script>
 

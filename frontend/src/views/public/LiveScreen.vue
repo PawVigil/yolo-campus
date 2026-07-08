@@ -6,7 +6,8 @@
     <!-- 正文 -->
     <n-layout-content class="live-content">
       <n-spin :show="loading">
-        <template v-if="!loading && data">
+        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <template v-else-if="!loading && data">
           <div class="time-range-badge">
             <span class="badge-text">📅 近 14 天数据</span>
           </div>
@@ -14,17 +15,17 @@
           <!-- 统计卡片 -->
           <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
             <n-grid-item>
-              <StatCard icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
+              <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
             </n-grid-item>
             <n-grid-item>
-              <StatCard icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
+              <StatCard :icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
             </n-grid-item>
             <n-grid-item>
-              <StatCard icon="LocationOutline" :value="data.stats.locations_covered" label="覆盖地点" color="#f0a020" />
+              <StatCard :icon="LocationOutline" :value="data.stats.locations_covered" label="覆盖地点" color="#f0a020" />
             </n-grid-item>
             <n-grid-item>
               <div class="click-stat" @click="router.push('/breeds')">
-                <StatCard icon="GitBranchOutline" :value="data.stats.breed_count" label="品种数" color="#2080f0" />
+                <StatCard :icon="GitBranchOutline" :value="data.stats.breed_count" label="品种数" color="#2080f0" />
               </div>
             </n-grid-item>
           </n-grid>
@@ -40,7 +41,7 @@
                   <n-tag :type="statusType(loc.status)" size="small" round>{{ statusLabel(loc.status) }}</n-tag>
                 </div>
                 <div class="loc-body">
-                  <div v-if="loc.recent_breeds.length > 0" class="loc-breeds">
+                  <div v-if="loc.recent_breeds?.length" class="loc-breeds">
                     <n-tag v-for="b in loc.recent_breeds" :key="b" size="tiny" round class="breed-tag">{{ b }}</n-tag>
                   </div>
                   <div v-else class="loc-empty">暂无记录</div>
@@ -78,6 +79,7 @@ import { getPublicDashboard } from '@/api/public.js'
 const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
+const error = ref(false)
 let timer = null
 
 function statusType(status) {
@@ -99,10 +101,12 @@ function formatTime(t) {
 }
 
 async function fetchData() {
+  error.value = false
   try {
     data.value = await getPublicDashboard()
   } catch (e) {
     console.error('获取大屏数据失败', e)
+    error.value = true
   } finally {
     loading.value = false
   }
@@ -202,5 +206,8 @@ onUnmounted(() => {
 }
 .chart-card {
   margin: 24px 0;
+}
+.error-state {
+  margin-top: 80px;
 }
 </style>

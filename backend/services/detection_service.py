@@ -58,6 +58,7 @@ class DetectionService:
         image_path: str,
         detect_time: str,
         animals: list[AnimalResult],
+        annotated_path: str = "",
     ) -> Detection:
         """仅存库，不调 YOLO"""
         result_json = json.dumps(
@@ -69,9 +70,10 @@ class DetectionService:
         try:
             cursor = conn.execute(
                 """INSERT INTO detection (location_id, user_id, image_path,
-                   detect_time, result_json, total_animals)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                (location_id, user_id, image_path, detect_time, result_json, total),
+                   detect_time, result_json, total_animals, annotated_path)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (location_id, user_id, image_path, detect_time,
+                 result_json, total, annotated_path),
             )
             conn.commit()
             det_id = cursor.lastrowid
@@ -179,7 +181,7 @@ class DetectionService:
                 image_path=row["image_path"], detect_time=row["detect_time"],
                 result_json=row["result_json"], total_animals=row["total_animals"],
                 created_at=row["created_at"],
-            ), row["location_name"]
+            ), row["location_name"], row["annotated_path"] if "annotated_path" in row.keys() else ""
         finally:
             conn.close()
 

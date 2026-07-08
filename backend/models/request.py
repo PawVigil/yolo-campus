@@ -19,6 +19,7 @@ class SaveDetectionRequest(BaseModel):
     """B2. POST /api/detections"""
     location_id: int
     image_path: str
+    annotated_path: str = ""  # 标注图路径（可选）
     detect_time: str          # ISO 8601
     result_json: str          # JSON.stringify(animals)
     total_animals: int = 0

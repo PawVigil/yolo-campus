@@ -41,21 +41,33 @@ def _build_response(row) -> CommunityShareResponse:
     # 统一转为dict
     d = dict(row) if not isinstance(row, dict) else row
     bi = _load_breed_info().get(d.get("breed") or "", None)
-    # 处理路径：将绝对路径转为相对URL
+    # 处理路径：兼容旧格式（单路径）和新格式（JSON数组）
     raw_path = d['image_path']
-    if 'uploads' in raw_path:
-        img_url = "/" + raw_path.split("uploads", 1)[1].replace("\\", "/")
-        img_url = img_url.lstrip("/")  # 确保不会出现 //
-        img_url = "/uploads/" + img_url
-    else:
-        img_url = f"/{raw_path}"
+    paths: list[str] = []
+    try:
+        parsed = json.loads(raw_path)
+        if isinstance(parsed, list):
+            paths = parsed
+        else:
+            paths = [str(parsed)]
+    except (json.JSONDecodeError, TypeError):
+        paths = [raw_path]
+
+    def _path_to_url(p: str) -> str:
+        if 'uploads' in p:
+            u = "/" + p.split("uploads", 1)[1].replace("\\", "/")
+            u = u.lstrip("/")
+            return "/uploads/" + u
+        return f"/{p}"
+
+    img_urls = [_path_to_url(p) for p in paths]
     comments = _parse_comments(d.get("comments_json"))
     return CommunityShareResponse(
         id=d["id"],
         location_id=d.get("location_id"),
         location_name=d.get("location_name"),
-        image_url=img_url,
-        images=[img_url],
+        image_url=img_urls[0],
+        images=img_urls,
         comments=comments,
         description=d.get("description"),
         nickname=d.get("nickname"),
@@ -80,21 +92,25 @@ class CommunityService:
 
     @staticmethod
     def create(
-        image_path: str,
+        image_paths: list[str],
         location_id: int | None = None,
         description: str | None = None,
         nickname: str | None = None,
         auto_detect: bool = False,
     ) -> CommunityShare:
-        """创建社区分享记录"""
+        """创建社区分享记录（支持多图）"""
         breed: str | None = None
         if auto_detect:
             try:
-                animals = engine.detect(image_path)
+                # 用第一张图做品种识别
+                animals = engine.detect(image_paths[0])
                 if animals:
-                    breed = animals[0].breed_cn  # 取置信度最高的
+                    breed = animals[0].breed_cn
             except Exception:
-                pass  # YOLO 识别失败不影响上传
+                pass
+
+        # 将路径列表存为JSON数组
+        paths_json = json.dumps(image_paths, ensure_ascii=False)
 
         conn = get_db()
         try:
@@ -102,7 +118,7 @@ class CommunityService:
                 """INSERT INTO community_share
                    (location_id, image_path, description, nickname, breed)
                    VALUES (?, ?, ?, ?, ?)""",
-                (location_id, image_path, description, nickname, breed),
+                (location_id, paths_json, description, nickname, breed),
             )
             conn.commit()
 

@@ -448,28 +448,29 @@ async def share_card(detection_id: int):
 
 @router.post("/community", status_code=status.HTTP_201_CREATED)
 async def upload_community(
-    image: UploadFile = File(...),
+    images: list[UploadFile] = File(...),
     location_id: int | None = Form(None),
     description: str | None = Form(None),
     nickname: str | None = Form(None),
     auto_detect: bool = Form(False),
 ):
-    """上传社区分享图片"""
-    # 校验文件
+    """上传社区分享图片（支持多张）"""
     from config import ALLOWED_EXTENSIONS, MAX_FILE_SIZE_BYTES
-    file_data = await image.read()
-    ext = f".{image.filename.rsplit('.', 1)[-1].lower()}" if image.filename and "." in image.filename else ".jpg"
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="仅支持 JPG/PNG 格式")
-    if len(file_data) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=400, detail="文件大小超过 10MB 限制")
 
-    # 保存文件
-    image_path = CommunityService.save_upload_file(file_data, image.filename or "community.jpg")
+    image_paths: list[str] = []
+    for img in images:
+        file_data = await img.read()
+        ext = f".{img.filename.rsplit('.', 1)[-1].lower()}" if img.filename and "." in img.filename else ".jpg"
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"仅支持 JPG/PNG 格式: {img.filename}")
+        if len(file_data) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(status_code=400, detail=f"文件大小超过 10MB 限制: {img.filename}")
+        saved_path = CommunityService.save_upload_file(file_data, img.filename or "community.jpg")
+        image_paths.append(saved_path)
 
-    # 创建记录
+    # 创建记录（存储JSON数组）
     share = CommunityService.create(
-        image_path=image_path,
+        image_paths=image_paths,
         location_id=location_id,
         description=description,
         nickname=nickname,
