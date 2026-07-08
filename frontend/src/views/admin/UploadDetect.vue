@@ -91,8 +91,8 @@
         <n-button size="large" @click="resetDetect">
           🔄 重新上传
         </n-button>
-        <n-button size="large" @click="openShareCard" v-if="detectResult.animals.length > 0">
-          📤 生成分享卡片
+        <n-button size="large" @click="shareToCommunity" v-if="saveSuccess && detectResult.animals.length > 0">
+          📸 分享到社区
         </n-button>
       </div>
 
@@ -104,18 +104,6 @@
       </n-alert>
     </div>
 
-    <!-- 分享卡片弹窗 -->
-    <ShareCard
-      v-if="detectResult && detectResult.animals.length > 0"
-      v-model:show="showShareCard"
-      :breed-cn="detectResult.animals[0]?.breed_cn || '未知'"
-      :breed-en="detectResult.animals[0]?.breed_en || ''"
-      :emoji="getEmoji(detectResult.animals[0]?.breed_en)"
-      :location-name="locationName"
-      :detect-time="new Date().toISOString()"
-      :confidence="detectResult.animals[0]?.confidence || 0"
-      :detection-id="savedId || 0"
-    />
   </div>
 </template>
 
@@ -124,7 +112,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import DetectionResult from '@/components/DetectionResult.vue'
-import ShareCard from '@/components/ShareCard.vue'
 import { uploadImage, saveDetection, getLocations } from '@/api/admin.js'
 
 const router = useRouter()
@@ -140,7 +127,6 @@ const saving = ref(false)
 const saveSuccess = ref(false)
 const savedId = ref(null)
 const detectResult = ref(null)
-const showShareCard = ref(false)
 
 const locationName = computed(() => {
   const loc = locationOptions.value.find((l) => l.value === selectedLocation.value)
@@ -228,12 +214,11 @@ function resetDetect() {
   savedId.value = null
 }
 
-function openShareCard() {
-  if (!savedId.value) {
-    message.warning('请先保存检测记录')
-    return
-  }
-  showShareCard.value = true
+function shareToCommunity() {
+  if (!detectResult.value) return
+  const img = encodeURIComponent(detectResult.value.image_url || '')
+  const loc = selectedLocation.value || ''
+  router.push(`/admin/community?share_image=${img}&share_location=${loc}`)
 }
 
 onMounted(async () => {

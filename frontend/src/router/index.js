@@ -91,6 +91,12 @@ const routes = [
         component: () => import('@/views/admin/DataExport.vue'),
         meta: { title: '数据导出' },
       },
+      {
+        path: 'community',
+        name: 'admin-community',
+        component: () => import('@/views/admin/CommunityMgmt.vue'),
+        meta: { title: '社区分享管理' },
+      },
     ],
   },
 ]

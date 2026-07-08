@@ -310,7 +310,7 @@ async def create_safety_tip(req: SafetyTipCreate):
 
 @router.put("/safety-tips/{tip_id}", response_model=SafetyTipResponse)
 async def update_safety_tip(tip_id: int, req: SafetyTipUpdate):
-    tip = SafetyTipService.update(tip_id, req.title, req.content)
+    tip = SafetyTipService.update(tip_id, req.title, req.content, req.status, req.location_id)
     if tip is None:
         raise HTTPException(status_code=404, detail="安全提醒不存在")
     return SafetyTipResponse(
@@ -339,6 +339,18 @@ async def update_safety_tip_status(tip_id: int, req: SafetyTipStatusUpdate):
         id=tip["id"], status=tip["status"],
         published_at=tip.get("published_at"),
     )
+
+
+# ======================================================================
+# DELETE /api/safety-tips/{id} — 删除安全提醒
+# ======================================================================
+
+@router.delete("/safety-tips/{tip_id}", response_model=OKResponse)
+async def delete_safety_tip(tip_id: int):
+    ok = SafetyTipService.delete(tip_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="安全提醒不存在")
+    return OKResponse(ok=True)
 
 
 # ======================================================================

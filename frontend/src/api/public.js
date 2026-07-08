@@ -82,3 +82,23 @@ export function addComment(shareId, nickname, text) {
   if (USE_MOCK) return mockAddComment(shareId, nickname, text)
   return apiClient.post(`/api/public/community/${shareId}/comments`, { nickname, text }).then((r) => r.data)
 }
+
+// 从检测记录分享到社区（管理端用）
+export function shareFromDetection(data) {
+  return apiClient.post('/api/public/community/from-detection', data).then((r) => r.data)
+}
+
+// 删除社区分享（管理端用）
+export function deleteCommunity(id) {
+  return apiClient.delete(`/api/public/community/${id}`).then((r) => r.data)
+}
+
+// 删除社区评论（管理端用）
+export function deleteComment(shareId, commentId) {
+  return apiClient.delete(`/api/public/community/${shareId}/comments/${commentId}`).then((r) => r.data)
+}
+
+// 公开地点列表（无需鉴权）
+export function getPublicLocations() {
+  return apiClient.get('/api/public/locations').then((r) => r.data)
+}

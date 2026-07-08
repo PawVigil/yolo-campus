@@ -1,10 +1,7 @@
 <template>
-  <div class="community-page">
-    <PublicNav menu-key="community" />
-
-    <n-layout-content class="community-content">
-      <h2 class="page-title">📸 社区分享</h2>
-      <p class="page-subtitle">分享你在校园里发现的可爱动物吧！</p>
+  <div class="community-mgmt-page">
+    <h2 class="page-title">📸 社区分享管理</h2>
+    <p class="page-subtitle">管理所有用户的社区分享内容</p>
 
       <!-- 日期筛选 + 上传 -->
       <div class="top-bar">
@@ -17,6 +14,9 @@
         <n-empty v-if="!loading && items.length === 0" description="今天还没有人分享" class="empty-state" />
         <div v-else class="community-grid">
           <n-card v-for="item in items" :key="item.id" :bordered="false" class="community-card" @click="openDetail(item)">
+            <n-button text class="delete-share-btn" @click.stop="doDeleteShare(item.id)" title="删除此分享">
+              <span style="color: #d03050; font-size: 18px;">🗑️</span>
+            </n-button>
             <img :src="item.images[0]" class="cover-image" height="300" />
             <div class="card-info">
               <div class="card-top-row">
@@ -34,7 +34,6 @@
           </n-card>
         </div>
       </n-spin>
-    </n-layout-content>
 
     <!-- 详情弹窗：多图+评论 -->
     <n-modal v-model:show="showDetail" preset="card" title="📸 分享详情" style="max-width: 680px" :mask-closable="true">
@@ -63,6 +62,9 @@
             <span class="comment-nick">{{ c.nickname || '匿名' }}</span>
             <span class="comment-text">{{ c.text }}</span>
             <span class="comment-time">{{ fmtTime(c.time) }}</span>
+            <n-button text class="delete-comment-btn" @click="doDeleteComment(c.id)" title="删除此评论">
+              <span style="color: #d03050;">🗑️</span>
+            </n-button>
           </div>
           <div class="comment-input">
             <n-input v-model:value="commentNick" placeholder="昵称（选填）" size="small" class="nick-input" />
@@ -74,15 +76,18 @@
     </n-modal>
 
     <!-- 上传弹窗 -->
-    <n-modal v-model:show="showUpload" preset="card" title="📤 分享你的发现" style="max-width: 560px" :mask-closable="true">
+    <n-modal v-model:show="showUpload" preset="card" :title="shareImage ? '📸 从检测记录分享' : '📤 分享你的发现'" style="max-width: 560px" :mask-closable="true" @update:show="(v) => { if (!v) { shareImage = ''; shareLocation = ''; uploadFiles.value = []; } }">
       <n-form label-placement="top">
-        <n-form-item label="选择照片（可多张）">
+        <n-form-item v-if="!shareImage" label="选择照片（可多张）">
           <n-upload multiple accept="image/jpeg,image/png" :max="9" @change="onFilesChange">
             <n-button>选择照片（JPG/PNG）</n-button>
           </n-upload>
           <div v-if="uploadFiles.length > 0" class="upload-preview">
             <span v-for="(f, i) in uploadFiles" :key="i" class="preview-chip">{{ f.name }}</span>
           </div>
+        </n-form-item>
+        <n-form-item v-else label="检测图片">
+          <img :src="shareImage" style="max-width: 100%; max-height: 200px; border-radius: 8px;" />
         </n-form-item>
         <n-form-item label="地点（可选）">
           <n-select v-model:value="uploadForm.location_id" :options="locationOptions" placeholder="选择地点" clearable />
@@ -96,8 +101,8 @@
       </n-form>
       <template #footer>
         <n-button @click="showUpload = false">取消</n-button>
-        <n-button type="primary" @click="doUpload" :loading="uploading" :disabled="uploadFiles.length === 0">
-          {{ uploading ? '上传中...' : '确认分享' }}
+        <n-button type="primary" @click="doUpload" :loading="uploading" :disabled="!shareImage && uploadFiles.length === 0">
+          {{ uploading ? '分享中...' : '确认分享' }}
         </n-button>
       </template>
     </n-modal>
@@ -106,14 +111,16 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import PublicNav from '@/components/PublicNav.vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
-import { getCommunity, uploadCommunity, addComment, getPublicLocations } from '@/api/public.js'
+import { getCommunity, uploadCommunity, addComment, deleteCommunity, deleteComment, shareFromDetection, getPublicLocations } from '@/api/public.js'
 
 const router = useRouter()
+const route = useRoute()
 const message = useMessage()
+const shareImage = ref('')
+const shareLocation = ref('')
 const loading = ref(false)
 const items = ref([])
 const filterDate = ref(Date.now())
@@ -161,11 +168,31 @@ async function doComment() {
   try {
     const res = await addComment(detailItem.value.id, commentNick.value, commentText.value.trim())
     commentText.value = ''
-    // 用后端返回的评论列表更新
     detailItem.value.comments = res.comments || []
     const idx = items.value.findIndex(i => i.id === detailItem.value.id)
     if (idx >= 0) items.value[idx].comments = res.comments || []
   } catch (e) { message.error('评论失败') }
+}
+
+async function doDeleteShare(id) {
+  if (!window.confirm('确定要删除这条分享吗？所有评论也会被删除。')) return
+  try {
+    await deleteCommunity(id)
+    message.success('分享已删除')
+    items.value = items.value.filter(i => i.id !== id)
+    if (detailItem.value?.id === id) showDetail.value = false
+  } catch (e) { message.error('删除失败') }
+}
+
+async function doDeleteComment(commentId) {
+  if (!window.confirm('确定要删除这条评论吗？')) return
+  try {
+    const res = await deleteComment(detailItem.value.id, commentId)
+    detailItem.value.comments = res.comments || []
+    const idx = items.value.findIndex(i => i.id === detailItem.value.id)
+    if (idx >= 0) items.value[idx].comments = res.comments || []
+    message.success('评论已删除')
+  } catch (e) { message.error('删除失败') }
 }
 
 function onFilesChange({ fileList }) {
@@ -173,11 +200,35 @@ function onFilesChange({ fileList }) {
 }
 
 async function doUpload() {
+  // 来自检测记录的分享（无需上传文件）
+  if (shareImage.value) {
+    uploading.value = true
+    try {
+      await shareFromDetection({
+        image_url: shareImage.value,
+        location_id: uploadForm.location_id || null,
+        description: uploadForm.description || null,
+        nickname: uploadForm.nickname || null,
+        auto_detect: true,
+      })
+      message.success('分享成功！')
+      showUpload.value = false
+      shareImage.value = ''
+      shareLocation.value = ''
+      uploadForm.description = ''
+      uploadForm.nickname = ''
+      uploadForm.location_id = null
+      fetchList()
+    } catch (e) { message.error('分享失败') }
+    finally { uploading.value = false }
+    return
+  }
+
+  // 正常多图上传
   if (uploadFiles.value.length === 0) return
   uploading.value = true
   try {
     const fd = new FormData()
-    // 多图上传
     for (const f of uploadFiles.value) {
       fd.append('images', f)
     }
@@ -198,20 +249,20 @@ async function doUpload() {
 }
 
 onMounted(async () => {
+  // 检查是否从检测记录跳转过来
+  if (route.query.share_image) {
+    shareImage.value = decodeURIComponent(route.query.share_image)
+    shareLocation.value = route.query.share_location || ''
+    uploadForm.location_id = shareLocation.value ? parseInt(shareLocation.value) : null
+    showUpload.value = true
+  }
   await fetchList()
   try { const r = await getPublicLocations(); locationOptions.value = (r.items||[]).map(l => ({ label: l.name, value: l.id })) } catch {}
 })
 </script>
 
 <style scoped>
-.community-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
-.community-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+.community-mgmt-page { max-width: 1100px; }
 .page-title { text-align: center; font-size: 28px; margin-bottom: 4px; }
 .page-subtitle { text-align: center; color: #909399; margin-bottom: 20px; }
 .top-bar { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; align-items: center; }
@@ -219,6 +270,8 @@ onMounted(async () => {
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .community-card { cursor: pointer; transition: all 0.3s; position: relative; }
 .community-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.delete-share-btn { position: absolute; top: 8px; right: 8px; z-index: 10; opacity: 0.6; }
+.delete-share-btn:hover { opacity: 1; }
 .cover-image { width: 100%; height: 300px; object-fit: cover; border-radius: 8px; display: block; }
 .photo-count { color: #7c5ce7; font-size: 12px; font-weight: 600; margin-left: auto; }
 .card-info { padding-top: 12px; }
@@ -239,6 +292,8 @@ onMounted(async () => {
 .comment-nick { font-weight: 600; color: #7c5ce7; font-size: 13px; }
 .comment-text { font-size: 14px; color: #333; flex: 1; }
 .comment-time { font-size: 11px; color: #ccc; }
+.delete-comment-btn { margin-left: auto; flex-shrink: 0; opacity: 0.5; }
+.delete-comment-btn:hover { opacity: 1; }
 .comment-input { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
 .nick-input { width: 120px; flex-shrink: 0; }
 

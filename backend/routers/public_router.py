@@ -5,6 +5,7 @@ from collections import Counter
 from datetime import datetime
 
 from fastapi import APIRouter, Body, File, Form, HTTPException, Query, UploadFile, status
+from pydantic import BaseModel
 
 from db import get_db
 from models.request import CommunityUploadRequest
@@ -15,6 +16,8 @@ from models.response import (
     CommunityListResponse,
     GuideLocation,
     GuideResponse,
+    LocationListResponse,
+    LocationResponse,
     PublicDashboard,
     RankingsResponse,
     MostSeenRank,
@@ -42,9 +45,24 @@ from services.community_service import CommunityService
 from services.dashboard_service import DashboardService
 from services.safety_tip_service import SafetyTipService
 from services.share_card_service import ShareCardService
+from services.location_service import LocationService
 
 router = APIRouter(prefix="/api/public", tags=["公共端"])
 
+
+# ======================================================================
+# C0. GET /api/public/locations — 地点列表（公开，无需鉴权）
+# ======================================================================
+
+@router.get("/locations", response_model=LocationListResponse)
+async def public_locations():
+    locs = LocationService.get_all()
+    return LocationListResponse(
+        items=[LocationResponse(id=l.id, name=l.name, description=l.description,
+               safety_tip=l.safety_tip,
+               created_at=str(l.created_at) if l.created_at else "")
+               for l in locs]
+    )
 
 # ======================================================================
 # C1. GET /api/public/dashboard — 实时大屏
@@ -484,6 +502,34 @@ async def upload_community(
 
 
 # ======================================================================
+# POST /api/public/community/from-detection — 从检测记录分享到社区
+# ======================================================================
+
+class ShareFromDetectionRequest(BaseModel):
+    image_url: str
+    location_id: int | None = None
+    description: str | None = None
+    nickname: str | None = None
+    auto_detect: bool = False
+
+
+@router.post("/community/from-detection", status_code=status.HTTP_201_CREATED)
+async def share_from_detection(req: ShareFromDetectionRequest):
+    """将检测记录中的图片分享到社区（无需重新上传文件）"""
+    share = CommunityService.create_from_detection(
+        image_url=req.image_url,
+        location_id=req.location_id,
+        description=req.description,
+        nickname=req.nickname,
+        auto_detect=req.auto_detect,
+    )
+    result = CommunityService.get_by_id(share.id)
+    if result:
+        return result.model_dump()
+    return share.to_dict()
+
+
+# ======================================================================
 # C9. GET /api/public/community — 社区分享列表
 # ======================================================================
 
@@ -491,8 +537,9 @@ async def upload_community(
 async def list_community(
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=50),
+    date: str | None = Query(None),
 ):
-    result = CommunityService.get_list(page=page, page_size=page_size)
+    result = CommunityService.get_list(page=page, page_size=page_size, date=date)
     return CommunityListResponse(
         items=result.items,
         total=result.total,
@@ -519,3 +566,27 @@ async def add_community_comment(
     if result is None:
         raise HTTPException(status_code=404, detail="分享不存在")
     return {"ok": True, "comments": result}
+
+
+# ======================================================================
+# DELETE /api/public/community/{id} — 删除社区分享
+# ======================================================================
+
+@router.delete("/community/{share_id}")
+async def delete_community_share(share_id: int):
+    ok = CommunityService.delete(share_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="分享不存在")
+    return {"ok": True}
+
+
+# ======================================================================
+# DELETE /api/public/community/{id}/comments/{cid} — 删除评论
+# ======================================================================
+
+@router.delete("/community/{share_id}/comments/{comment_id}")
+async def delete_community_comment(share_id: int, comment_id: int):
+    comments = CommunityService.delete_comment(share_id, comment_id)
+    if comments is None:
+        raise HTTPException(status_code=404, detail="分享不存在")
+    return {"ok": True, "comments": comments}
