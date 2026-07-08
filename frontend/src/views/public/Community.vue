@@ -160,11 +160,12 @@ function openDetail(item) {
 async function doComment() {
   if (!commentText.value.trim() || !detailItem.value) return
   try {
-    await addComment(detailItem.value.id, commentNick.value, commentText.value.trim())
+    const res = await addComment(detailItem.value.id, commentNick.value, commentText.value.trim())
     commentText.value = ''
-    // 刷新本地数据
+    // 用后端返回的评论列表更新
+    detailItem.value.comments = res.comments || []
     const idx = items.value.findIndex(i => i.id === detailItem.value.id)
-    if (idx >= 0) items.value[idx] = detailItem.value
+    if (idx >= 0) items.value[idx].comments = res.comments || []
   } catch (e) { message.error('评论失败') }
 }
 
@@ -177,7 +178,10 @@ async function doUpload() {
   uploading.value = true
   try {
     const fd = new FormData()
-    uploadFiles.value.forEach(f => fd.append('images', f))
+    // 后端目前只支持单张图片，取第一张
+    if (uploadFiles.value.length > 0) {
+      fd.append('image', uploadFiles.value[0])
+    }
     if (uploadForm.location_id) fd.append('location_id', String(uploadForm.location_id))
     if (uploadForm.description) fd.append('description', uploadForm.description)
     if (uploadForm.nickname) fd.append('nickname', uploadForm.nickname)

@@ -305,10 +305,12 @@ class CommunityShareResponse(BaseModel):
     location_id: int | None = None
     location_name: str | None = None
     image_url: str
+    images: list[str] = []           # 前端组件需要images数组（兼容单图）
     description: str | None = None
     nickname: str | None = None
     breed: str | None = None
     breed_info: dict | None = None   # 品种知识卡片（来自 breed_info.json）
+    comments: list[dict] = []        # 评论列表（前端组件需要）
     created_at: str
 
 

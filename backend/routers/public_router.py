@@ -4,7 +4,7 @@ import json
 from collections import Counter
 from datetime import datetime
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Body, File, Form, HTTPException, Query, UploadFile, status
 
 from db import get_db
 from models.request import CommunityUploadRequest
@@ -25,6 +25,19 @@ from models.response import (
     MainBreed,
     BestTime,
 )
+
+# breed_info.json 缓存
+import json as json_module
+from pathlib import Path as PathModule
+_breed_info_cache = None
+
+def _get_breed_info():
+    global _breed_info_cache
+    if _breed_info_cache is None:
+        path = PathModule(__file__).parent.parent / "breed_info.json"
+        with open(path, "r", encoding="utf-8") as f:
+            _breed_info_cache = json_module.load(f)
+    return _breed_info_cache
 from services.community_service import CommunityService
 from services.dashboard_service import DashboardService
 from services.safety_tip_service import SafetyTipService
@@ -40,6 +53,39 @@ router = APIRouter(prefix="/api/public", tags=["公共端"])
 @router.get("/dashboard")
 async def public_dashboard():
     return DashboardService.get_public_dashboard().model_dump()
+
+
+# ======================================================================
+# /api/public/breed-stats — 品种检测统计（前端品种百科页面使用）
+# ======================================================================
+
+@router.get("/breed-stats")
+async def breed_stats():
+    """返回各品种的检测次数统计"""
+    conn = get_db()
+    try:
+        breed_info = _get_breed_info()
+        # 构建中文名→英文key的映射
+        cn_to_en = {}
+        for key, info in breed_info.items():
+            cn_to_en[info.get("name_cn", key)] = key
+
+        rows = conn.execute(
+            "SELECT result_json FROM detection WHERE total_animals > 0"
+        ).fetchall()
+
+        breed_count: Counter = Counter()
+        for r in rows:
+            try:
+                for a in json.loads(r["result_json"]):
+                    breed_count[a.get("breed_cn", "")] += 1
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+        stats = {b: c for b, c in breed_count.items()}
+        return {"stats": stats, "breed_info": breed_info}
+    finally:
+        conn.close()
 
 
 # ======================================================================
@@ -429,6 +475,10 @@ async def upload_community(
         nickname=nickname,
         auto_detect=auto_detect,
     )
+    # 返回完整响应（含image_url, images, comments等）
+    result = CommunityService.get_by_id(share.id)
+    if result:
+        return result.model_dump()
     return share.to_dict()
 
 
@@ -448,3 +498,23 @@ async def list_community(
         page=result.page,
         page_size=result.page_size,
     )
+
+
+# ======================================================================
+# POST /api/public/community/{id}/comments — 社区评论
+# ======================================================================
+
+@router.post("/community/{share_id}/comments")
+async def add_community_comment(
+    share_id: int,
+    payload: dict = Body(...),
+):
+    """添加评论到社区分享"""
+    result = CommunityService.add_comment(
+        share_id,
+        payload.get("nickname", ""),
+        payload.get("text", ""),
+    )
+    if result is None:
+        raise HTTPException(status_code=404, detail="分享不存在")
+    return {"ok": True, "comments": result}

@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 from config import COMMUNITY_DIR
@@ -23,6 +24,45 @@ def _load_breed_info() -> dict:
         else:
             _breed_info = {}
     return _breed_info
+
+
+def _parse_comments(comments_json: str | None) -> list[dict]:
+    """解析评论JSON字符串，容错处理"""
+    if not comments_json:
+        return []
+    try:
+        return json.loads(comments_json)
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+
+def _build_response(row) -> CommunityShareResponse:
+    """根据数据库行构建CommunityShareResponse（兼容dict和sqlite3.Row）"""
+    # 统一转为dict
+    d = dict(row) if not isinstance(row, dict) else row
+    bi = _load_breed_info().get(d.get("breed") or "", None)
+    # 处理路径：将绝对路径转为相对URL
+    raw_path = d['image_path']
+    if 'uploads' in raw_path:
+        img_url = "/" + raw_path.split("uploads", 1)[1].replace("\\", "/")
+        img_url = img_url.lstrip("/")  # 确保不会出现 //
+        img_url = "/uploads/" + img_url
+    else:
+        img_url = f"/{raw_path}"
+    comments = _parse_comments(d.get("comments_json"))
+    return CommunityShareResponse(
+        id=d["id"],
+        location_id=d.get("location_id"),
+        location_name=d.get("location_name"),
+        image_url=img_url,
+        images=[img_url],
+        comments=comments,
+        description=d.get("description"),
+        nickname=d.get("nickname"),
+        breed=d.get("breed"),
+        breed_info=bi,
+        created_at=d["created_at"],
+    )
 
 
 class CommunityService:
@@ -100,21 +140,9 @@ class CommunityService:
                 (page_size, offset),
             ).fetchall()
 
-            breed_info = _load_breed_info()
             items: list[CommunityShareResponse] = []
             for r in rows:
-                bi = breed_info.get(r["breed"] or "", None)
-                items.append(CommunityShareResponse(
-                    id=r["id"],
-                    location_id=r["location_id"],
-                    location_name=r["location_name"],
-                    image_url=f"/{r['image_path']}",
-                    description=r["description"],
-                    nickname=r["nickname"],
-                    breed=r["breed"],
-                    breed_info=bi,
-                    created_at=r["created_at"],
-                ))
+                items.append(_build_response(r))
 
             return PaginatedResult(
                 items=items, total=total, page=page, page_size=page_size,
@@ -136,19 +164,35 @@ class CommunityService:
             ).fetchone()
             if row is None:
                 return None
+            return _build_response(row)
+        finally:
+            conn.close()
 
-            breed_info = _load_breed_info()
-            bi = breed_info.get(row["breed"] or "", None)
-            return CommunityShareResponse(
-                id=row["id"],
-                location_id=row["location_id"],
-                location_name=row["location_name"],
-                image_url=f"/{row['image_path']}",
-                description=row["description"],
-                nickname=row["nickname"],
-                breed=row["breed"],
-                breed_info=bi,
-                created_at=row["created_at"],
+    @staticmethod
+    def add_comment(share_id: int, nickname: str, text: str) -> list[dict] | None:
+        """添加评论到社区分享（方案A：存JSON字段）"""
+        conn = get_db()
+        try:
+            row = conn.execute(
+                "SELECT comments_json FROM community_share WHERE id = ?",
+                (share_id,),
+            ).fetchone()
+            if row is None:
+                return None
+
+            comments = _parse_comments(row["comments_json"])
+            comment = {
+                "id": len(comments) + 1,
+                "nickname": nickname or "匿名",
+                "text": text.strip(),
+                "time": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            }
+            comments.append(comment)
+            conn.execute(
+                "UPDATE community_share SET comments_json = ? WHERE id = ?",
+                (json.dumps(comments, ensure_ascii=False), share_id),
             )
+            conn.commit()
+            return comments
         finally:
             conn.close()
