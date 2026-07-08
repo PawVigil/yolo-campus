@@ -174,29 +174,23 @@ onMounted(() => fetchCalendar())
 </script>
 
 <style scoped>
-.calendar-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
-.cal-content { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
+.calendar-page { min-height: 100vh; background: var(--color-cream-paper); }
+.cal-content { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
 .month-header { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
-.month-title { margin: 0; font-size: 22px; }
-.weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: #909399; margin-bottom: 8px; }
+.month-title { margin: 0; font-size: 22px; color: var(--color-forest-ink); }
+.weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: var(--weight-semibold); color: var(--color-pencil-gray); margin-bottom: 8px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.cal-cell { min-height: 80px; padding: 8px; background: #fff; border-radius: 8px; cursor: default; transition: all 0.2s; }
+.cal-cell { min-height: 80px; padding: 8px; background: var(--color-cream-paper); border-radius: var(--radius-card); cursor: default; transition: all var(--transition-fast); }
 .cal-cell.has-animals { cursor: pointer; }
-.cal-cell.has-animals:hover { background: #f0ebff; transform: scale(1.02); }
-.cal-cell.is-today { border: 2px solid #7c5ce7; }
-.cal-cell.is-future { background: #f9f9fb; color: #ccc; }
-.day-num { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.cal-cell.has-animals:hover { background: var(--surface-mint); }
+.cal-cell.is-today { border: 2px solid var(--color-forest-ink); background: var(--surface-highlighter); }
+.cal-cell.is-future { opacity: 0.4; }
+.day-num { font-weight: var(--weight-semibold); font-size: 14px; color: var(--color-forest-ink); margin-bottom: 4px; }
 .day-icons { display: flex; justify-content: center; gap: 4px; margin-top: 6px; }
 .day-icon { font-size: 20px; line-height: 1; }
 
 .detail-list { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-.detail-card { border-left: 3px solid #7c5ce7; }
+.detail-card { border-left: 3px solid var(--color-forest-ink); }
 .detail-loc { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .loc-emoji { font-size: 20px; }
 .detail-breeds { display: flex; gap: 4px; flex-wrap: wrap; }

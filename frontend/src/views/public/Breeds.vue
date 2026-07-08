@@ -100,35 +100,30 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.breeds-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
+.breeds-page { min-height: 100vh; background: var(--color-cream-paper); }
 .breeds-content { max-width: 1300px; margin: 0 auto; padding: 24px 20px 60px; }
-.hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea18, #764ba218); border-radius: 16px; margin-bottom: 24px; }
-.hero h1 { font-size: 32px; color: #7c5ce7; margin: 0 0 8px; }
-.hero p { color: #909399; margin: 0; }
-.green { color: #18a058; }
+.hero { text-align: center; padding: 40px 20px; background: var(--color-cream-paper); border-radius: var(--radius-card); margin-bottom: 24px; border: 1px solid var(--color-pencil-gray); }
+.hero h1 { font-size: 32px; color: var(--color-forest-ink); margin: 0 0 8px; }
+.hero p { color: var(--color-whisper-gray); margin: 0; }
+.green { color: var(--color-forest-ink); font-weight: var(--weight-bold); }
 .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 28px; }
-.tab { padding: 8px 24px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600; color: #909399; background: #fff; border: 1px solid #e8e8e8; transition: all 0.2s; }
-.tab:hover { color: #7c5ce7; border-color: #d4c4f0; }
-.tab.active { background: #7c5ce7; color: #fff; border-color: #7c5ce7; }
-.sec-title { font-size: 20px; margin: 0 0 16px; color: #555; }
+.tab { padding: 8px 24px; border-radius: var(--radius-full); cursor: pointer; font-size: 14px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); background: var(--color-cream-paper); border: 1px solid var(--color-pencil-gray); transition: all var(--transition-fast); }
+.tab:hover { border-color: var(--color-forest-ink); }
+.tab.active { background: var(--surface-highlighter); color: var(--color-forest-ink); border-color: var(--surface-highlighter); }
+.sec-title { font-size: 20px; margin: 0 0 16px; color: var(--color-forest-ink); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-.card { border-radius: 12px; transition: all 0.3s; }
-.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-.card.cat { border-top: 3px solid #18a058; }
-.card.dog { border-top: 3px solid #f0a020; }
-.card.undetected { opacity: 0.55; }
+.card { border-radius: var(--radius-card); transition: all var(--transition-fast); }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-subtle-2); }
+.card.cat { border-top: 3px solid var(--color-mint); }
+.card.dog { border-top: 3px solid var(--color-sand); }
+.card.undetected { opacity: 0.6; }
 .card.undetected:hover { opacity: 0.85; }
 .card-emoji { font-size: 48px; text-align: center; }
-.card h3 { text-align: center; font-size: 18px; margin: 4px 0 2px; }
-.en-name { text-align: center; font-size: 12px; color: #aaa; margin: 0; }
+.card h3 { text-align: center; font-size: 18px; margin: 4px 0 2px; color: var(--color-forest-ink); }
+.en-name { text-align: center; font-size: 12px; color: var(--color-pencil-gray); margin: 0; }
 .badge-row { text-align: center; margin: 6px 0; }
-.attr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; color: #555; }
-.lbl { color: #999; font-size: 13px; min-width: 32px; }
-.fact { background: #fef9f0; border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #5d4037; line-height: 1.5; }
+.attr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; color: var(--color-forest-ink); }
+.lbl { color: var(--color-whisper-gray); font-size: 13px; min-width: 32px; }
+.fact { background: var(--color-cream-paper); border: 1px solid var(--color-pencil-gray); border-radius: var(--radius-card); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: var(--color-forest-ink); line-height: 1.5; }
+</style>
 </style>

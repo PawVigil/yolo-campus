@@ -107,33 +107,27 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.guide-page { min-height: 100vh; background: linear-gradient(180deg, #fef9f0, #f5f7fa); }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
-.guide-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-.page-title { text-align: center; font-size: 28px; margin-bottom: 4px; }
-.page-subtitle { text-align: center; color: #909399; margin-bottom: 32px; }
+.guide-page { min-height: 100vh; background: var(--color-cream-paper); }
+.guide-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+.page-title { text-align: center; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
+.page-subtitle { text-align: center; color: var(--color-whisper-gray); margin-bottom: 32px; }
 .guide-cards { display: flex; flex-direction: column; gap: 20px; }
-.guide-card { transition: transform 0.2s; }
+.guide-card { transition: transform var(--transition-fast); border-radius: var(--radius-card); }
 .guide-card:hover { transform: translateY(-2px); }
 .card-top { display: flex; align-items: center; gap: 16px; }
 .card-emoji { font-size: 40px; }
 .card-header { flex: 1; }
-.card-name { margin: 0 0 4px; font-size: 20px; }
-.star { color: #ddd; font-size: 18px; }
-.star.active { color: #f0a020; }
-.rating-text { font-size: 13px; color: #909399; margin-left: 8px; }
+.card-name { margin: 0 0 4px; font-size: 20px; color: var(--color-forest-ink); }
+.star { color: var(--color-pencil-gray); font-size: 18px; }
+.star.active { color: var(--color-forest-ink); }
+.rating-text { font-size: 13px; color: var(--color-whisper-gray); margin-left: 8px; }
 .info-block { padding: 8px 0; }
-.info-label { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #333; }
+.info-label { font-size: 14px; font-weight: var(--weight-semibold); margin-bottom: 8px; color: var(--color-forest-ink); }
 .info-value { display: flex; gap: 4px; flex-wrap: wrap; }
-.time-range { font-size: 20px; font-weight: 700; color: #7c5ce7; }
-.pattern-desc { font-size: 14px; color: #555; line-height: 1.6; }
+.time-range { font-size: 20px; font-weight: var(--weight-bold); color: var(--color-forest-ink); }
+.pattern-desc { font-size: 14px; color: var(--color-forest-ink); line-height: 1.6; }
 .breed-tag { margin: 2px; }
-.tip-block { background: #fff9e6; border-radius: 8px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 8px; }
+.tip-block { background: var(--surface-highlighter); border-radius: var(--radius-card); padding: 12px 16px; display: flex; align-items: flex-start; gap: 8px; }
 .tip-icon { flex-shrink: 0; font-size: 16px; }
-.tip-text { font-size: 14px; color: #5d4037; line-height: 1.6; }
+.tip-text { font-size: 14px; color: var(--color-forest-ink); line-height: 1.6; }
 </style>
