@@ -360,7 +360,16 @@ export async function mockUpdateSafetyTip(id, data) {
   if (!tip) throw { response: { status: 404, data: { detail: '提醒不存在' } } }
   if (data.title) tip.title = data.title
   if (data.content) tip.content = data.content
+  if (data.status) tip.status = data.status
   return tip
+}
+
+export async function mockDeleteSafetyTip(id) {
+  await delay(200)
+  const idx = safetyTips.findIndex(t => t.id === parseInt(id))
+  if (idx < 0) throw { response: { status: 404 } }
+  safetyTips.splice(idx, 1)
+  return { ok: true }
 }
 
 export async function mockUpdateSafetyTipStatus(id, status) {
@@ -376,10 +385,10 @@ export async function mockGetSuggestions() {
   await delay(500)
   return {
     suggestions: [
-      { location_id: 1, location_name: '食堂', count: 23, suggestion_text: '频繁出没，请注意避让', data_basis: '近7天检测23次' },
-      { location_id: 2, location_name: '宿舍', count: 15, suggestion_text: '请留意周围', data_basis: '近7天检测15次' },
-      { location_id: 4, location_name: '操场', count: 12, suggestion_text: '请留意周围', data_basis: '近7天检测12次' },
-      { location_id: 3, location_name: '图书馆', count: 8, suggestion_text: '偶有出没，请保持关注', data_basis: '近7天检测8次' },
+      { location_id: 1, location_name: '食堂', count: 23, suggestion_text: '频繁出没，请注意避让', suggestion_content: '食堂区域近7天检测到23次动物出没，主要为橘猫和三花猫。建议提醒学生保持安全距离，不要随意投喂。', data_basis: '近7天检测23次' },
+      { location_id: 2, location_name: '宿舍', count: 15, suggestion_text: '请留意周围', suggestion_content: '宿舍楼周边近7天检测到15次动物出没，奶牛猫和布偶猫较为活跃。建议晚间回宿舍时注意观察周围环境。', data_basis: '近7天检测15次' },
+      { location_id: 4, location_name: '操场', count: 12, suggestion_text: '请留意周围', suggestion_content: '操场区域近7天检测到12次动物出没，黄狗和柴犬活跃。建议晨跑和晚间锻炼时注意安全，不要单独在操场逗留。', data_basis: '近7天检测12次' },
+      { location_id: 3, location_name: '图书馆', count: 8, suggestion_text: '偶有出没，请保持关注', suggestion_content: '图书馆周边近7天检测到8次动物出没，布偶猫和暹罗猫偶有出现。保持关注即可，不需过度担心。', data_basis: '近7天检测8次' },
     ],
   }
 }

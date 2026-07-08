@@ -12,19 +12,19 @@
             v-for="s in suggestions"
             :key="s.location_id"
             :type="suggestionType(s.count)"
-            :title="s.location_name"
             class="suggestion-item"
           >
-            <template #header>
-              <div class="suggestion-header">
-                <LocationBadge :name="s.location_name" />
-                <span class="suggestion-text">{{ s.suggestion_text }}</span>
+            <div class="suggestion-row">
+              <div class="suggestion-body">
+                <div class="suggestion-header">
+                  <LocationBadge :name="s.location_name" />
+                  <span class="suggestion-text">{{ s.suggestion_text }}</span>
+                  <span class="suggestion-basis">（{{ s.data_basis }}）</span>
+                </div>
+                <p class="suggestion-content">{{ s.suggestion_content }}</p>
               </div>
-            </template>
-            <p>{{ s.data_basis }}</p>
-            <template #footer>
-              <n-button size="small" type="primary" @click="adoptSuggestion(s)">采纳建议</n-button>
-            </template>
+              <n-button size="small" type="primary" @click="adoptSuggestion(s)" class="adopt-btn">采纳建议</n-button>
+            </div>
           </n-alert>
         </div>
       </n-spin>
@@ -88,6 +88,7 @@
                   <n-button v-if="tip.status === 'draft'" size="tiny" type="success" @click="doPublish(tip.id)">发布</n-button>
                   <n-button v-if="tip.status === 'published'" size="tiny" type="warning" @click="doArchive(tip.id)">下架</n-button>
                   <n-button size="tiny" type="info" @click="startEdit(tip)">编辑</n-button>
+                  <n-button v-if="tip.status !== 'published'" size="tiny" type="error" @click="doDelete(tip.id)">删除</n-button>
                 </n-button-group>
               </td>
             </tr>
@@ -102,7 +103,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
-import { getSafetyTips, createSafetyTip, updateSafetyTip, updateSafetyTipStatus, getSuggestions, getLocations } from '@/api/admin.js'
+import { getSafetyTips, createSafetyTip, updateSafetyTip, updateSafetyTipStatus, deleteSafetyTip, getSuggestions, getLocations } from '@/api/admin.js'
 
 const message = useMessage()
 const suggestionLoading = ref(false)
@@ -166,7 +167,7 @@ async function fetchTips() {
 function adoptSuggestion(s) {
   editForm.location_id = s.location_id
   editForm.title = s.suggestion_text
-  editForm.content = `${s.location_name}区域${s.suggestion_text}。${s.data_basis}。`
+  editForm.content = s.suggestion_content || `${s.location_name}区域${s.suggestion_text}。${s.data_basis}。`
   editForm.status = 'draft'
 }
 
@@ -180,6 +181,7 @@ async function doSave() {
       await updateSafetyTip(editingId.value, {
         title: editForm.title,
         content: editForm.content,
+        status: editForm.status,
       })
       message.success('更新成功')
     } else {
@@ -235,6 +237,18 @@ async function doArchive(id) {
   }
 }
 
+async function doDelete(id) {
+  if (!window.confirm('确定要删除该提醒吗？')) return
+  try {
+    await deleteSafetyTip(id)
+    message.success('已删除')
+    fetchTips()
+  } catch (e) {
+    console.error('删除失败', e)
+    message.error('删除失败')
+  }
+}
+
 onMounted(async () => {
   await Promise.all([fetchSuggestions(), fetchTips()])
   try {
@@ -249,11 +263,16 @@ onMounted(async () => {
 .page-title { margin-bottom: 20px; font-size: 22px; }
 .suggestion-card { margin-bottom: 16px; }
 .suggestion-list { display: flex; flex-direction: column; gap: 12px; }
-.suggestion-header { display: flex; align-items: center; gap: 10px; }
-.suggestion-text { font-weight: 500; }
 .form-card { margin-bottom: 16px; }
 .form-actions { display: flex; gap: 8px; margin-top: 12px; }
 .list-card { margin-bottom: 16px; }
 .title-cell { font-weight: 500; }
 .time-cell { font-size: 13px; color: #666; }
+.suggestion-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.suggestion-body { flex: 1; }
+.suggestion-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.suggestion-text { font-weight: 600; font-size: 15px; }
+.suggestion-basis { font-size: 12px; color: #999; }
+.suggestion-content { font-size: 14px; color: #555; line-height: 1.6; margin: 0; }
+.adopt-btn { flex-shrink: 0; margin-top: 2px; }
 </style>

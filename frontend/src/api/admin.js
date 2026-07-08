@@ -18,6 +18,7 @@ import {
   mockCreateSafetyTip,
   mockUpdateSafetyTip,
   mockUpdateSafetyTipStatus,
+  mockDeleteSafetyTip,
   mockGetSuggestions,
   mockGetAdminDashboard,
   mockGetWeeklyReport,
@@ -108,6 +109,12 @@ export function updateSafetyTip(id, data) {
 }
 
 // B13. PUT /api/safety-tips/{id}/status
+// B13.5 DELETE /api/safety-tips/{id}
+export function deleteSafetyTip(id) {
+  if (USE_MOCK) return mockDeleteSafetyTip(id)
+  return apiClient.delete(`/api/safety-tips/${id}`).then((r) => r.data)
+}
+
 export function updateSafetyTipStatus(id, status) {
   if (USE_MOCK) return mockUpdateSafetyTipStatus(id, status)
   return apiClient.put(`/api/safety-tips/${id}/status`, { status }).then((r) => r.data)
