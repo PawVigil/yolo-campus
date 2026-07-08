@@ -79,15 +79,17 @@ function confColor(conf) {
   min-width: 0;
 }
 .image-label {
+  font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
+  color: var(--color-forest-ink);
   margin-bottom: 8px;
 }
 .detect-image {
   width: 100%;
   max-height: 400px;
-  border-radius: 8px;
-  border: 1px solid #eee;
+  border-radius: var(--radius-image);
+  border: 1px solid var(--color-pencil-gray);
 }
 .detect-image :deep(img) {
   width: 100%;
@@ -102,13 +104,16 @@ function confColor(conf) {
 }
 .result-header h4 {
   margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-forest-ink);
 }
 .breed-name {
   margin-left: 6px;
 }
 .box-coords {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: #909399;
+  color: var(--color-pencil-gray);
 }
 </style>

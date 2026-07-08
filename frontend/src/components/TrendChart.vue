@@ -12,7 +12,7 @@ const props = defineProps({
   height: { type: String, default: '300px' },
   xField: { type: String, default: 'day' },
   yField: { type: String, default: 'count' },
-  color: { type: String, default: '#7c5ce7' },
+  color: { type: String, default: '#1a3300' },
 })
 
 const chartRef = ref(null)
@@ -31,18 +31,27 @@ function updateChart() {
 
   chart.setOption({
     title: props.title
-      ? { text: props.title, left: 'center', textStyle: { fontSize: 14, fontWeight: 500 } }
+      ? { text: props.title, left: 'center', textStyle: { fontSize: 14, fontWeight: 500, color: '#1a3300' } }
       : undefined,
-    tooltip: { trigger: 'axis' },
-    grid: { top: props.title ? 40 : 20, right: 20, bottom: 50, left: 55 },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#fcfaf5',
+      borderColor: '#b6b6b6',
+      textStyle: { color: '#1a3300', fontSize: 12 },
+    },
+    grid: { top: props.title ? 40 : 20, right: 20, bottom: 30, left: 50 },
     xAxis: {
       type: 'category',
-      data: xData.map(d => d.slice(5)),  // "2026-07-01" → "07-01"
-      axisLabel: { rotate: 45, fontSize: 11 },
+      data: xData.map(d => d.slice(5)),
+      axisLabel: { rotate: 45, fontSize: 11, color: '#b6b6b6' },
+      axisLine: { lineStyle: { color: '#b6b6b6' } },
+      axisTick: { show: false },
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
+      splitLine: { lineStyle: { color: '#e8e0d5', type: 'dashed' } },
+      axisLabel: { fontSize: 11, color: '#b6b6b6' },
     },
     series: [
       {
@@ -53,8 +62,8 @@ function updateChart() {
         itemStyle: { color: props.color },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: props.color + '40' },
-            { offset: 1, color: props.color + '05' },
+            { offset: 0, color: 'rgba(26, 51, 0, 0.25)' },
+            { offset: 1, color: 'rgba(26, 51, 0, 0.02)' },
           ]),
         },
         symbol: 'circle',
