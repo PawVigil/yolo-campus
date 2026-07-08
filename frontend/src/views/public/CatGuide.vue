@@ -42,7 +42,7 @@
                 <n-grid-item>
                   <div class="info-block">
                     <div class="info-label">⏰ 最佳时段</div>
-                    <div class="info-value time-range">{{ loc.best_time.start }} - {{ loc.best_time.end }}</div>
+                    <div class="info-value time-range">{{ loc.best_time?.start || '--' }} - {{ loc.best_time?.end || '--' }}</div>
                   </div>
                 </n-grid-item>
                 <n-grid-item>
