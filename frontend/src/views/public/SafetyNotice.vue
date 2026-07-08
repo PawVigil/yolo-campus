@@ -1,16 +1,7 @@
 <template>
   <div class="safety-page">
     <!-- 导航 -->
-    <n-layout-header class="public-nav" bordered>
-      <div class="nav-content">
-        <div class="nav-brand" @click="$router.push('/')">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawVigil</span>
-        </div>
-        <n-menu v-model:value="activeMenu" mode="horizontal" :options="menuOptions" @update:value="onMenuChange" />
-        <n-button text @click="$router.push('/login')" class="admin-link">🔧 管理入口</n-button>
-      </div>
-    </n-layout-header>
+    <PublicNav menu-key="safety" />
 
     <n-layout-content class="safety-content">
       <n-spin :show="loading">
@@ -42,27 +33,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PublicNav from '@/components/PublicNav.vue'
 import LocationBadge from '@/components/LocationBadge.vue'
 import { getPublicSafetyTips } from '@/api/public.js'
 
 const router = useRouter()
-const activeMenu = ref('safety')
 const loading = ref(true)
 const data = ref({ items: [] })
 
-const menuOptions = [
-  { label: '🏠 实时大屏', key: 'live' },
-  { label: '📅 出没日历', key: 'calendar' },
-  { label: '🏆 排行榜', key: 'rankings' },
-  { label: '🐱 撸猫指南', key: 'guide' },
-  { label: '⚠️ 安全提醒', key: 'safety' },
-  { label: '📸 社区分享', key: 'community' },
-]
 
-function onMenuChange(key) {
-  const routeMap = { live: '/', calendar: '/calendar', rankings: '/rankings', guide: '/guide', safety: '/safety', community: '/community' }
-  router.push(routeMap[key])
-}
 
 onMounted(async () => {
   try {

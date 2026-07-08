@@ -1,15 +1,6 @@
 <template>
   <div class="calendar-page">
-    <n-layout-header class="public-nav" bordered>
-      <div class="nav-content">
-        <div class="nav-brand" @click="$router.push('/')">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawVigil</span>
-        </div>
-        <n-menu v-model:value="activeMenu" mode="horizontal" :options="menuOptions" @update:value="onMenuChange" />
-        <n-button text @click="$router.push('/login')" class="admin-link">🔧 管理入口</n-button>
-      </div>
-    </n-layout-header>
+    <PublicNav menu-key="calendar" />
 
     <n-layout-content class="cal-content">
       <div class="month-header">
@@ -70,10 +61,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PublicNav from '@/components/PublicNav.vue'
 import { getCalendar, getPublicDetections } from '@/api/public.js'
 
 const router = useRouter()
-const activeMenu = ref('calendar')
 const weekDays = ['日', '一', '二', '三', '四', '五', '六']
 
 const now = new Date()
@@ -85,18 +76,6 @@ const detailLoading = ref(false)
 const detailLocations = ref([])
 const selectedDate = ref('')
 
-const menuOptions = [
-  { label: '🏠 实时大屏', key: 'live' },
-  { label: '📅 出没日历', key: 'calendar' },
-  { label: '🏆 排行榜', key: 'rankings' },
-  { label: '🐱 撸猫指南', key: 'guide' },
-  { label: '⚠️ 安全提醒', key: 'safety' },
-  { label: '📸 社区分享', key: 'community' },
-]
-function onMenuChange(key) {
-  const m = { live: '/', calendar: '/calendar', rankings: '/rankings', guide: '/guide', safety: '/safety', community: '/community' }
-  router.push(m[key])
-}
 
 const locEmojis = { '食堂': '🍽️', '宿舍': '🏠', '图书馆': '📚', '操场': '🏟️', '花园': '🌳' }
 

@@ -24,7 +24,7 @@ const routes = [
     path: '/guide',
     name: 'public-guide',
     component: () => import('@/views/public/CatGuide.vue'),
-    meta: { title: '撸猫指南' },
+    meta: { title: '观测指南' },
   },
   {
     path: '/safety',

@@ -1,15 +1,6 @@
 <template>
   <div class="breeds-page">
-    <n-layout-header class="public-nav" bordered>
-      <div class="nav-content">
-        <div class="nav-brand" @click="$router.push('/')">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawVigil</span>
-        </div>
-        <n-menu v-model:value="activeMenu" mode="horizontal" :options="menuOptions" @update:value="onMenuChange" />
-        <n-button text @click="$router.push('/login')" class="admin-link">🔧 管理入口</n-button>
-      </div>
-    </n-layout-header>
+    <PublicNav menu-key="breeds" />
 
     <n-layout-content class="breeds-content">
       <n-spin :show="loading">
@@ -54,27 +45,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PublicNav from '@/components/PublicNav.vue'
 import { getBreedStats } from '@/api/public.js'
 
 const router = useRouter()
-const activeMenu = ref('breeds')
 const activeTab = ref('cat')
 const loading = ref(true)
 const breedData = ref({})
 const breedStats = ref({})
 
-const menuOptions = [
-  { label: '🏠 实时大屏', key: 'live' },
-  { label: '📅 出没日历', key: 'calendar' },
-  { label: '🏆 排行榜', key: 'rankings' },
-  { label: '🐱 撸猫指南', key: 'guide' },
-  { label: '⚠️ 安全提醒', key: 'safety' },
-  { label: '📸 社区分享', key: 'community' },
-]
-function onMenuChange(key) {
-  const m = { live: '/', calendar: '/calendar', rankings: '/rankings', guide: '/guide', safety: '/safety', community: '/community' }
-  router.push(m[key])
-}
 
 const catKeys = ['Abyssinian','Bengal','Birman','Bombay','British_Shorthair','Egyptian_Mau','Maine_Coon','Persian','Ragdoll','Russian_Blue','Siamese','Sphynx']
 const dogKeys = ['american_bulldog','american_pit_bull_terrier','basset_hound','beagle','boxer','chihuahua','english_cocker_spaniel','english_setter','german_shorthaired','great_pyrenees','havanese','japanese_chin','keeshond','leonberger','miniature_pinscher','newfoundland','pomeranian','pug','saint_bernard','samoyed','scottish_terrier','shiba_inu','staffordshire_bull_terrier','wheaten_terrier','yorkshire_terrier']

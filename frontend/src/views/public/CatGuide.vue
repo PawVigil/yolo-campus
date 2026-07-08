@@ -1,21 +1,12 @@
 <template>
   <div class="guide-page">
     <!-- 导航 -->
-    <n-layout-header class="public-nav" bordered>
-      <div class="nav-content">
-        <div class="nav-brand" @click="$router.push('/')">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawVigil</span>
-        </div>
-        <n-menu v-model:value="activeMenu" mode="horizontal" :options="menuOptions" @update:value="onMenuChange" />
-        <n-button text @click="$router.push('/login')" class="admin-link">🔧 管理入口</n-button>
-      </div>
-    </n-layout-header>
+    <PublicNav menu-key="guide" />
 
     <n-layout-content class="guide-content">
       <n-spin :show="loading">
         <template v-if="!loading && data">
-          <h2 class="page-title">🐱 撸猫指南</h2>
+          <h2 class="page-title">🐱 观测指南</h2>
           <p class="page-subtitle">基于各地点真实出没数据，帮你找到最佳观测时机</p>
 
           <div class="guide-cards">
@@ -79,26 +70,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PublicNav from '@/components/PublicNav.vue'
 import { getGuide } from '@/api/public.js'
 
 const router = useRouter()
-const activeMenu = ref('guide')
 const loading = ref(true)
 const data = ref(null)
 
-const menuOptions = [
-  { label: '🏠 实时大屏', key: 'live' },
-  { label: '📅 出没日历', key: 'calendar' },
-  { label: '🏆 排行榜', key: 'rankings' },
-  { label: '🐱 撸猫指南', key: 'guide' },
-  { label: '⚠️ 安全提醒', key: 'safety' },
-  { label: '📸 社区分享', key: 'community' },
-]
 
-function onMenuChange(key) {
-  const routeMap = { live: '/', calendar: '/calendar', rankings: '/rankings', guide: '/guide', safety: '/safety', community: '/community' }
-  router.push(routeMap[key])
-}
 
 function ratingLabel(r) {
   const map = { 5: '极高', 4: '很高', 3: '一般', 2: '较低', 1: '很低' }

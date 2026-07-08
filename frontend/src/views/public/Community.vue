@@ -1,15 +1,6 @@
 <template>
   <div class="community-page">
-    <n-layout-header class="public-nav" bordered>
-      <div class="nav-content">
-        <div class="nav-brand" @click="$router.push('/')">
-          <span class="brand-icon">🐾</span>
-          <span class="brand-text">PawVigil</span>
-        </div>
-        <n-menu v-model:value="activeMenu" mode="horizontal" :options="menuOptions" @update:value="onMenuChange" />
-        <n-button text @click="$router.push('/login')" class="admin-link">🔧 管理入口</n-button>
-      </div>
-    </n-layout-header>
+    <PublicNav menu-key="community" />
 
     <n-layout-content class="community-content">
       <h2 class="page-title">📸 社区分享</h2>
@@ -116,6 +107,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import PublicNav from '@/components/PublicNav.vue'
 import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
 import { getCommunity, uploadCommunity, addComment } from '@/api/public.js'
@@ -123,7 +115,6 @@ import { getLocations } from '@/api/admin.js'
 
 const router = useRouter()
 const message = useMessage()
-const activeMenu = ref('community')
 const loading = ref(false)
 const items = ref([])
 const filterDate = ref(Date.now())
@@ -137,18 +128,6 @@ const locationOptions = ref([])
 const commentNick = ref('')
 const commentText = ref('')
 
-const menuOptions = [
-  { label: '🏠 实时大屏', key: 'live' },
-  { label: '📅 出没日历', key: 'calendar' },
-  { label: '🏆 排行榜', key: 'rankings' },
-  { label: '🐱 撸猫指南', key: 'guide' },
-  { label: '⚠️ 安全提醒', key: 'safety' },
-  { label: '📸 社区分享', key: 'community' },
-]
-function onMenuChange(key) {
-  const m = { live: '/', calendar: '/calendar', rankings: '/rankings', guide: '/guide', safety: '/safety', community: '/community' }
-  router.push(m[key])
-}
 
 function fmtTime(t) {
   if (!t) return ''
