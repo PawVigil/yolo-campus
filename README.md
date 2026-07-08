@@ -38,6 +38,17 @@ yolo-campus/
 │   ├── 启动前端.vbs           #   Windows 双击启动
 │   └── package.json
 ├── backend/                   # FastAPI 后端（宋鑫旺）
+│   ├── main.py                #   FastAPI 入口 + 生命周期
+│   ├── config.py              #   配置常量（路径/密钥）
+│   ├── db.py                  #   SQLite 初始化 + 建表
+│   ├── yolo_engine.py         #   YOLOv8 检测引擎封装
+│   ├── auth.py                #   JWT 认证工具
+│   ├── schema.sql             #   建表 SQL
+│   ├── test_e2e.py            #   端到端测试
+│   ├── models/                #   数据模型（Pydantic + ORM）
+│   ├── routers/               #   API 路由（auth/admin/public）
+│   ├── services/              #   业务逻辑层
+│   └── templates/             #   模板文件
 ├── demo/                      # YOLO 检测 Demo
 ├── best.pt                    # 训练好的模型权重
 ├── breed_info.json            # 37 品种知识库
