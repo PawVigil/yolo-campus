@@ -68,7 +68,6 @@
         <n-table v-else :single-line="false" :bordered="false" size="small">
           <thead>
             <tr>
-              <th style="width:60px">ID</th>
               <th style="width:80px">地点</th>
               <th style="min-width:120px">标题</th>
               <th style="width:100px">状态</th>
@@ -78,7 +77,6 @@
           </thead>
           <tbody>
             <tr v-for="tip in tips" :key="tip.id">
-              <td>{{ tip.id }}</td>
               <td><LocationBadge :name="tip.location_name" /></td>
               <td class="title-cell">{{ tip.title }}</td>
               <td><n-tag :type="statusTagType(tip.status)" round size="small">{{ statusLabel(tip.status) }}</n-tag></td>
@@ -165,6 +163,7 @@ async function fetchTips() {
 }
 
 function adoptSuggestion(s) {
+  editingId.value = null
   editForm.location_id = s.location_id
   editForm.title = s.suggestion_text
   editForm.content = s.suggestion_content || `${s.location_name}区域${s.suggestion_text}。${s.data_basis}。`
@@ -182,6 +181,7 @@ async function doSave() {
         title: editForm.title,
         content: editForm.content,
         status: editForm.status,
+        location_id: editForm.location_id,
       })
       message.success('更新成功')
     } else {

@@ -65,6 +65,8 @@ class SafetyTipUpdate(BaseModel):
     """B12. PUT /api/safety-tips/{id}"""
     title: str | None = None
     content: str | None = None
+    status: str | None = None
+    location_id: int | None = None
 
 
 class SafetyTipStatusUpdate(BaseModel):
