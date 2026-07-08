@@ -5,7 +5,7 @@
         <!-- 统计卡片 -->
         <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
           <n-grid-item>
-            <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
+            <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" />
           </n-grid-item>
           <n-grid-item>
             <StatCard :icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
@@ -43,7 +43,7 @@
 
         <!-- 趋势图 -->
         <n-card :bordered="false" title="📈 近14天检测趋势" class="trend-card">
-          <TrendChart :data="data.trend_14d" height="320px" color="#7c5ce7" />
+          <TrendChart :data="data.trend_14d" height="320px" />
         </n-card>
       </template>
     </n-spin>
@@ -70,8 +70,7 @@ const maxCount = computed(() => {
 })
 
 function rankColor(idx) {
-  const colors = ['#f0a020', '#c0c0c0', '#cd7f32', '#7c5ce7', '#2080f0']
-  return colors[idx] || '#7c5ce7'
+  return '#1a3300'
 }
 
 function initBarChart() {

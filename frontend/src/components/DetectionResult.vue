@@ -59,9 +59,9 @@ const props = defineProps({
 const placeholderUrl = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect fill="%23f0f0f0" width="400" height="300"/><text x="200" y="150" text-anchor="middle" fill="%23ccc" font-size="16">暂无图片</text></svg>'
 
 function confColor(conf) {
-  if (conf >= 0.9) return '#18a058'
-  if (conf >= 0.7) return '#f0a020'
-  return '#d03050'
+  if (conf >= 0.9) return '#1a3300'
+  if (conf >= 0.7) return '#4a6a2a'
+  return '#e89970'
 }
 </script>
 
