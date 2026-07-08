@@ -67,6 +67,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { CameraOutline, PawOutline, LocationOutline, GitBranchOutline } from '@vicons/ionicons5'
 import StatCard from '@/components/StatCard.vue'
 import TrendChart from '@/components/TrendChart.vue'
@@ -74,6 +75,7 @@ import SafetyTicker from '@/components/SafetyTicker.vue'
 import PublicNav from '@/components/PublicNav.vue'
 import { getPublicDashboard } from '@/api/public.js'
 
+const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
 let timer = null
