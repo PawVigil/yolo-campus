@@ -5,7 +5,8 @@
 
     <n-layout-content class="safety-content">
       <n-spin :show="loading">
-        <template v-if="!loading && data">
+        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <template v-else-if="!loading && data">
           <h2 class="page-title">⚠️ 安全提醒公示</h2>
           <p class="page-subtitle">管理员基于真实检测数据发布，共 {{ data.items.length }} 条提醒</p>
 
@@ -40,14 +41,17 @@ import { getPublicSafetyTips } from '@/api/public.js'
 const router = useRouter()
 const loading = ref(true)
 const data = ref({ items: [] })
+const error = ref(false)
 
 
 
 onMounted(async () => {
+  error.value = false
   try {
     data.value = await getPublicSafetyTips()
   } catch (e) {
     console.error('获取安全提醒失败', e)
+    error.value = true
   } finally {
     loading.value = false
   }

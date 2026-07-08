@@ -5,7 +5,8 @@
 
     <n-layout-content class="guide-content">
       <n-spin :show="loading">
-        <template v-if="!loading && data">
+        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <template v-else-if="!loading && data">
           <h2 class="page-title">🐱 观测指南</h2>
           <p class="page-subtitle">基于各地点真实出没数据，帮你找到最佳观测时机</p>
 
@@ -76,6 +77,7 @@ import { getGuide } from '@/api/public.js'
 const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
+const error = ref(false)
 
 
 
@@ -92,10 +94,12 @@ function rateColor(rate) {
 }
 
 onMounted(async () => {
+  error.value = false
   try {
     data.value = await getGuide()
   } catch (e) {
     console.error('获取指南失败', e)
+    error.value = true
   } finally {
     loading.value = false
   }

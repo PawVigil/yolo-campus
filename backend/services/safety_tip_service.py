@@ -58,7 +58,7 @@ class SafetyTipService:
             conn.close()
 
     @staticmethod
-    def update(tip_id: int, title: str | None, content: str | None) -> dict | None:
+    def update(tip_id: int, title: str | None, content: str | None, status: str | None = None, location_id: int | None = None) -> dict | None:
         conn = get_db()
         try:
             row = conn.execute(
@@ -69,10 +69,12 @@ class SafetyTipService:
 
             new_title = title if title is not None else row["title"]
             new_content = content if content is not None else row["content"]
+            new_status = status if status is not None else row["status"]
+            new_location_id = location_id if location_id is not None else row["location_id"]
 
             conn.execute(
-                "UPDATE safety_tip SET title = ?, content = ? WHERE id = ?",
-                (new_title, new_content, tip_id),
+                "UPDATE safety_tip SET title = ?, content = ?, status = ?, location_id = ? WHERE id = ?",
+                (new_title, new_content, new_status, new_location_id, tip_id),
             )
             conn.commit()
 
@@ -80,6 +82,19 @@ class SafetyTipService:
                 "SELECT * FROM safety_tip WHERE id = ?", (tip_id,)
             ).fetchone()
             return dict(updated)
+        finally:
+            conn.close()
+
+    @staticmethod
+    def delete(tip_id: int) -> bool:
+        conn = get_db()
+        try:
+            row = conn.execute("SELECT id FROM safety_tip WHERE id = ?", (tip_id,)).fetchone()
+            if row is None:
+                return False
+            conn.execute("DELETE FROM safety_tip WHERE id = ?", (tip_id,))
+            conn.commit()
+            return True
         finally:
             conn.close()
 

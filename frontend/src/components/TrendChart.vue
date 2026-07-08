@@ -64,13 +64,15 @@ function updateChart() {
   })
 }
 
+const onResize = () => chart?.resize()
+
 onMounted(() => {
   initChart()
-  window.addEventListener('resize', () => chart?.resize())
+  window.addEventListener('resize', onResize)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', () => chart?.resize())
+  window.removeEventListener('resize', onResize)
   chart?.dispose()
 })
 

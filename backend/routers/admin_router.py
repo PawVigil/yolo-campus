@@ -113,6 +113,7 @@ async def save_detection(
         image_path=req.image_path,
         detect_time=req.detect_time,
         animals=animals,
+        annotated_path=req.annotated_path,
     )
     return {"id": det.id, "created_at": det.created_at}
 
@@ -166,13 +167,15 @@ async def get_detection(detection_id: int):
     result = DetectionService.get_by_id(detection_id)
     if result is None:
         raise HTTPException(status_code=404, detail="检测记录不存在")
-    det, location_name = result
+    det, location_name, annotated_path = result
     animals = det.get_animals()
+    # 使用存储的标注图路径，如果为空则用空字符串
+    annotated_url = _to_url(annotated_path) if annotated_path else ""
     return DetectionDetailResponse(
         id=det.id,
         location_name=location_name,
         image_url=_to_url(det.image_path),
-        annotated_url=_to_url(f"uploads/annotated/annotated_{Path(det.image_path).stem}.jpg"),
+        annotated_url=annotated_url,
         detect_time=det.detect_time,
         result_json=det.result_json,
         total_animals=det.total_animals,
@@ -307,7 +310,7 @@ async def create_safety_tip(req: SafetyTipCreate):
 
 @router.put("/safety-tips/{tip_id}", response_model=SafetyTipResponse)
 async def update_safety_tip(tip_id: int, req: SafetyTipUpdate):
-    tip = SafetyTipService.update(tip_id, req.title, req.content)
+    tip = SafetyTipService.update(tip_id, req.title, req.content, req.status, req.location_id)
     if tip is None:
         raise HTTPException(status_code=404, detail="安全提醒不存在")
     return SafetyTipResponse(
@@ -336,6 +339,18 @@ async def update_safety_tip_status(tip_id: int, req: SafetyTipStatusUpdate):
         id=tip["id"], status=tip["status"],
         published_at=tip.get("published_at"),
     )
+
+
+# ======================================================================
+# DELETE /api/safety-tips/{id} — 删除安全提醒
+# ======================================================================
+
+@router.delete("/safety-tips/{tip_id}", response_model=OKResponse)
+async def delete_safety_tip(tip_id: int):
+    ok = SafetyTipService.delete(tip_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="安全提醒不存在")
+    return OKResponse(ok=True)
 
 
 # ======================================================================

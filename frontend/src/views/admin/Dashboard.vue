@@ -5,16 +5,16 @@
         <!-- 统计卡片 -->
         <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
           <n-grid-item>
-            <StatCard icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
+            <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
           </n-grid-item>
           <n-grid-item>
-            <StatCard icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
+            <StatCard :icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
           </n-grid-item>
           <n-grid-item>
-            <StatCard icon="LocationOutline" :value="data.stats.locations_covered" label="覆盖地点" color="#f0a020" />
+            <StatCard :icon="LocationOutline" :value="data.stats.locations_covered" label="覆盖地点" color="#f0a020" />
           </n-grid-item>
           <n-grid-item>
-            <StatCard icon="AlertCircleOutline" :value="data.stats.published_tips" label="已发布提醒" color="#2080f0" />
+            <StatCard :icon="AlertCircleOutline" :value="data.stats.published_tips" label="已发布提醒" color="#2080f0" />
           </n-grid-item>
         </n-grid>
 
@@ -62,6 +62,7 @@ const loading = ref(true)
 const data = ref(null)
 const barChartRef = ref(null)
 let barChart = null
+const onBarResize = () => barChart?.resize()
 
 const maxCount = computed(() => {
   if (!data.value?.breed_top5?.length) return 1
@@ -113,11 +114,11 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-  window.addEventListener('resize', () => barChart?.resize())
+  window.addEventListener('resize', onBarResize)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', () => barChart?.resize())
+  window.removeEventListener('resize', onBarResize)
   barChart?.dispose()
 })
 
