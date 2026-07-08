@@ -82,3 +82,8 @@ export function addComment(shareId, nickname, text) {
   if (USE_MOCK) return mockAddComment(shareId, nickname, text)
   return apiClient.post(`/api/public/community/${shareId}/comments`, { nickname, text }).then((r) => r.data)
 }
+
+// 公开地点列表（无需鉴权）
+export function getPublicLocations() {
+  return apiClient.get('/api/public/locations').then((r) => r.data)
+}

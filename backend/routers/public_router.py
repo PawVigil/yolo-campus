@@ -15,6 +15,8 @@ from models.response import (
     CommunityListResponse,
     GuideLocation,
     GuideResponse,
+    LocationListResponse,
+    LocationResponse,
     PublicDashboard,
     RankingsResponse,
     MostSeenRank,
@@ -42,9 +44,24 @@ from services.community_service import CommunityService
 from services.dashboard_service import DashboardService
 from services.safety_tip_service import SafetyTipService
 from services.share_card_service import ShareCardService
+from services.location_service import LocationService
 
 router = APIRouter(prefix="/api/public", tags=["公共端"])
 
+
+# ======================================================================
+# C0. GET /api/public/locations — 地点列表（公开，无需鉴权）
+# ======================================================================
+
+@router.get("/locations", response_model=LocationListResponse)
+async def public_locations():
+    locs = LocationService.get_all()
+    return LocationListResponse(
+        items=[LocationResponse(id=l.id, name=l.name, description=l.description,
+               safety_tip=l.safety_tip,
+               created_at=str(l.created_at) if l.created_at else "")
+               for l in locs]
+    )
 
 # ======================================================================
 # C1. GET /api/public/dashboard — 实时大屏
@@ -491,8 +508,9 @@ async def upload_community(
 async def list_community(
     page: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=50),
+    date: str | None = Query(None),
 ):
-    result = CommunityService.get_list(page=page, page_size=page_size)
+    result = CommunityService.get_list(page=page, page_size=page_size, date=date)
     return CommunityListResponse(
         items=result.items,
         total=result.total,

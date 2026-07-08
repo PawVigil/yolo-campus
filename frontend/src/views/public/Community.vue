@@ -110,8 +110,7 @@ import { useRouter } from 'vue-router'
 import PublicNav from '@/components/PublicNav.vue'
 import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
-import { getCommunity, uploadCommunity, addComment } from '@/api/public.js'
-import { getLocations } from '@/api/admin.js'
+import { getCommunity, uploadCommunity, addComment, getPublicLocations } from '@/api/public.js'
 
 const router = useRouter()
 const message = useMessage()
@@ -200,7 +199,7 @@ async function doUpload() {
 
 onMounted(async () => {
   await fetchList()
-  try { const r = await getLocations(); locationOptions.value = (r.items||[]).map(l => ({ label: l.name, value: l.id })) } catch {}
+  try { const r = await getPublicLocations(); locationOptions.value = (r.items||[]).map(l => ({ label: l.name, value: l.id })) } catch {}
 })
 </script>
 

@@ -135,12 +135,20 @@ class CommunityService:
             conn.close()
 
     @staticmethod
-    def get_list(page: int = 1, page_size: int = 15) -> PaginatedResult:
-        """分页查询社区分享列表"""
+    def get_list(page: int = 1, page_size: int = 15, date: str | None = None) -> PaginatedResult:
+        """分页查询社区分享列表（支持按日期筛选）"""
         conn = get_db()
         try:
+            where_clause = "1=1"
+            params: list = []
+
+            if date:
+                where_clause = "date(cs.created_at) = ?"
+                params.append(date)
+
             total = conn.execute(
-                "SELECT COUNT(*) as c FROM community_share"
+                f"SELECT COUNT(*) as c FROM community_share cs WHERE {where_clause}",
+                params,
             ).fetchone()["c"]
 
             page = max(1, page)
@@ -148,12 +156,13 @@ class CommunityService:
             offset = (page - 1) * page_size
 
             rows = conn.execute(
-                """SELECT cs.*, l.name as location_name
+                f"""SELECT cs.*, l.name as location_name
                    FROM community_share cs
                    LEFT JOIN location l ON cs.location_id = l.id
+                   WHERE {where_clause}
                    ORDER BY cs.created_at DESC
                    LIMIT ? OFFSET ?""",
-                (page_size, offset),
+                params + [page_size, offset],
             ).fetchall()
 
             items: list[CommunityShareResponse] = []
