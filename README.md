@@ -58,6 +58,13 @@ yolo-campus/
     └── 系统设计说明书/
 ```
 
+## API 文档
+
+后端启动后访问：
+
+- **Swagger UI**：`http://localhost:8000/docs`（可在线调试）
+- **ReDoc**：`http://localhost:8000/redoc`（只读文档）
+
 ## 快速开始
 
 ### 前端
