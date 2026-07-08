@@ -222,30 +222,73 @@ class CalendarResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # 公共端 - 排行榜
 # ---------------------------------------------------------------------------
-class RankingItem(BaseModel):
-    """C4. 排行项"""
-    rank: int
+class MostSeenRank(BaseModel):
+    """C4. 出镜之王"""
+    breed: str
+    count: int
+    percentage: float
+
+
+class HomebodyRank(BaseModel):
+    """C4. 最佳宅猫"""
+    breed: str
+    location: str
+    percentage: float
+
+
+class RareRank(BaseModel):
+    """C4. 独行侠"""
+    breed: str
+    count: int
+
+
+class BusiestPlaceRank(BaseModel):
+    """C4. 最热闹地点"""
     name: str
     count: int
-    emoji: str = ""
+    percentage: float
+
+
+class BestTimeRank(BaseModel):
+    """C4. 最佳观测时间"""
+    hour_range: str
+    avg_count: float
 
 
 class RankingsResponse(BaseModel):
     """C4. GET /api/public/rankings"""
-    breed_ranking: list[RankingItem]
-    location_ranking: list[RankingItem]
+    most_seen: MostSeenRank
+    homebody: HomebodyRank
+    rare: RareRank
+    busiest_place: BusiestPlaceRank
+    best_time: BestTimeRank
 
 
 # ---------------------------------------------------------------------------
 # 公共端 - 撸猫指南
 # ---------------------------------------------------------------------------
+class MainBreed(BaseModel):
+    """C5. 主要住户品种"""
+    breed_cn: str
+    count: int
+
+
+class BestTime(BaseModel):
+    """C5. 最佳观测时段"""
+    start: str
+    end: str
+
+
 class GuideLocation(BaseModel):
     """C5. 单个地点的指南"""
-    location_name: str
-    breeds: list[str]
-    safety_tip: str | None = None
-    recent_count: int
+    name: str
     emoji: str = "🐱"
+    rating: int              # 1-5 星级
+    appearance_rate: float   # 0.0-1.0 出没率
+    main_breeds: list[MainBreed] = []
+    best_time: BestTime | None = None
+    pattern_desc: str = ""
+    tip: str = ""
 
 
 class GuideResponse(BaseModel):

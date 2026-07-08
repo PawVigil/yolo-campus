@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // 🔧 开发时切换：true=用mock数据, false=连真实后端
-const USE_MOCK = true
+const USE_MOCK = false
 
 const apiClient = axios.create({
   baseURL: USE_MOCK ? '' : 'http://localhost:8000',

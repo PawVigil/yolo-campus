@@ -16,8 +16,14 @@ from models.response import (
     GuideLocation,
     GuideResponse,
     PublicDashboard,
-    RankingItem,
     RankingsResponse,
+    MostSeenRank,
+    HomebodyRank,
+    RareRank,
+    BusiestPlaceRank,
+    BestTimeRank,
+    MainBreed,
+    BestTime,
 )
 from services.community_service import CommunityService
 from services.dashboard_service import DashboardService
@@ -140,41 +146,106 @@ async def public_detections(date: str = Query(..., description="YYYY-MM-DD")):
 
 @router.get("/rankings", response_model=RankingsResponse)
 async def rankings():
-    """品种排行 + 地点排行"""
+    """趣味排行榜（参考 SDS 4.3 排行榜聚合算法）"""
     conn = get_db()
     try:
-        # 品种排行
+        # 查询所有有动物的记录
         rows = conn.execute(
-            "SELECT result_json FROM detection WHERE total_animals > 0"
+            """SELECT d.result_json, d.detect_time, d.location_id, l.name as location_name
+               FROM detection d
+               JOIN location l ON d.location_id = l.id
+               WHERE d.total_animals > 0"""
         ).fetchall()
-        breed_counter: Counter = Counter()
-        for r in rows:
+
+        # 展平——每条记录可能含多个品种
+        breed_records = []
+        for row in rows:
             try:
-                for a in json.loads(r["result_json"]):
-                    breed_counter[a.get("breed_cn", "未知")] += 1
+                animals = json.loads(row["result_json"])
+                hour_str = row["detect_time"]  # "2026-07-06 12:30:00"
+                hour = int(hour_str[11:13]) if len(hour_str) >= 13 else 0
+                for animal in animals:
+                    breed_records.append({
+                        "breed": animal.get("breed_cn", "未知"),
+                        "location": row["location_name"],
+                        "hour": hour
+                    })
             except (json.JSONDecodeError, KeyError):
                 pass
 
-        breed_ranking = [
-            RankingItem(rank=i + 1, name=b, count=c, emoji="🐾")
-            for i, (b, c) in enumerate(breed_counter.most_common(10))
-        ]
+        if not breed_records:
+            # 没有数据时返回空结果
+            return RankingsResponse(
+                most_seen=MostSeenRank(breed="暂无", count=0, percentage=0),
+                homebody=HomebodyRank(breed="暂无", location="暂无", percentage=0),
+                rare=RareRank(breed="暂无", count=0),
+                busiest_place=BusiestPlaceRank(name="暂无", count=0, percentage=0),
+                best_time=BestTimeRank(hour_range="暂无", avg_count=0),
+            )
 
-        # 地点排行
-        loc_rows = conn.execute(
-            """SELECT l.name, COUNT(*) as cnt
-               FROM detection d
-               JOIN location l ON d.location_id = l.id
-               GROUP BY d.location_id ORDER BY cnt DESC"""
-        ).fetchall()
-        location_ranking = [
-            RankingItem(rank=i + 1, name=r["name"], count=r["cnt"], emoji="📍")
-            for i, r in enumerate(loc_rows)
-        ]
+        total = len(breed_records)
+
+        # 1. 出镜之王——频率最高的品种
+        breed_counts = Counter(r["breed"] for r in breed_records)
+        most_seen_breed, most_seen_count = breed_counts.most_common(1)[0]
+
+        # 2. 最佳宅猫——单一地点集中度最高的品种
+        breed_location = Counter(
+            (r["breed"], r["location"]) for r in breed_records
+        )
+        breed_concentration = {}
+        for breed in set(r["breed"] for r in breed_records):
+            breed_total = breed_counts[breed]
+            max_spot = max(
+                ((loc, count) for (b, loc), count in breed_location.items() if b == breed),
+                key=lambda x: x[1]
+            )
+            breed_concentration[breed] = {
+                "location": max_spot[0],
+                "percentage": max_spot[1] / breed_total
+            }
+        homebody = max(breed_concentration.items(),
+                       key=lambda x: x[1]["percentage"])
+
+        # 3. 独行侠——出现次数最少的品种
+        rare_breed, rare_count = breed_counts.most_common()[-1]
+
+        # 4. 最热闹地点
+        location_counts = Counter(r["location"] for r in breed_records)
+        busiest_place, busiest_count = location_counts.most_common(1)[0]
+
+        # 5. 最佳观测时间——2小时滑动窗口
+        hour_counts = Counter(r["hour"] for r in breed_records)
+        best_start = max(range(0, 23),
+            key=lambda h: hour_counts.get(h, 0) + hour_counts.get(h+1, 0))
 
         return RankingsResponse(
-            breed_ranking=breed_ranking,
-            location_ranking=location_ranking,
+            most_seen=MostSeenRank(
+                breed=most_seen_breed,
+                count=most_seen_count,
+                percentage=round(most_seen_count / total, 2)
+            ),
+            homebody=HomebodyRank(
+                breed=homebody[0],
+                location=homebody[1]["location"],
+                percentage=round(homebody[1]["percentage"], 2)
+            ),
+            rare=RareRank(
+                breed=rare_breed,
+                count=rare_count
+            ),
+            busiest_place=BusiestPlaceRank(
+                name=busiest_place,
+                count=busiest_count,
+                percentage=round(busiest_count / total, 2)
+            ),
+            best_time=BestTimeRank(
+                hour_range=f"{best_start:02d}:00 - {best_start+2:02d}:00",
+                avg_count=round(
+                    (hour_counts.get(best_start, 0) +
+                     hour_counts.get(best_start+1, 0)) / 2, 1
+                )
+            ),
         )
     finally:
         conn.close()
@@ -186,47 +257,116 @@ async def rankings():
 
 @router.get("/guide", response_model=GuideResponse)
 async def guide():
-    """返回每个地点的品种列表 + 安全提示"""
+    """返回每个地点的指南（按出没率排序，参考 SDS 3.2.4）"""
     conn = get_db()
     try:
         locations = conn.execute("SELECT * FROM location ORDER BY id").fetchall()
         result: list[GuideLocation] = []
 
+        # 地点emoji映射
+        EMOJI_MAP = {
+            "食堂": "🍽️", "宿舍": "🏠", "图书馆": "📚",
+            "操场": "🏟️", "花园": "🌳",
+        }
+
+        # 出没率→星级映射
+        def to_rating(rate: float) -> int:
+            if rate >= 0.8: return 5
+            if rate >= 0.6: return 4
+            if rate >= 0.4: return 3
+            if rate >= 0.2: return 2
+            return 1
+
+        # 出没率→描述模板
+        def to_pattern(rate: float) -> str:
+            if rate >= 0.8: return "几乎每天都会出现"
+            if rate >= 0.5: return "经常出现"
+            if rate >= 0.3: return "偶有出没"
+            return "不常出现"
+
+        # 出没率→小贴士
+        TIPS = {
+            "食堂": "带根火腿肠去食堂后门，中午12点左右是观测最佳时段。",
+            "宿舍": "傍晚下课回宿舍的路上多留意绿化带。",
+            "图书馆": "下午去图书馆自习时，从后门进去可能会遇到晒太阳的猫咪。",
+            "操场": "晨跑时可能会在操场东北角看到狗狗，建议保持距离观察。",
+            "花园": "上午阳光好的时候在花园长椅附近可能会遇到小猫。",
+        }
+
         for loc in locations:
-            # 最近品种
+            # 出没率 = 有动物的记录数/总检测数
+            stats = conn.execute(
+                """SELECT COUNT(*) as total,
+                          SUM(CASE WHEN total_animals > 0 THEN 1 ELSE 0 END) as with_animals
+                   FROM detection
+                   WHERE location_id = ?""",
+                (loc["id"],),
+            ).fetchone()
+            total = stats["total"] or 0
+            with_animals = stats["with_animals"] or 0
+            appearance_rate = round(with_animals / total, 2) if total > 0 else 0
+
+            # 主要住户品种 TOP3
             det_rows = conn.execute(
                 """SELECT result_json FROM detection
-                   WHERE location_id = ? AND total_animals > 0
-                   ORDER BY detect_time DESC LIMIT 5""",
+                   WHERE location_id = ? AND total_animals > 0""",
                 (loc["id"],),
             ).fetchall()
 
-            breed_set: list[str] = []
+            breed_counter: Counter = Counter()
             for r in det_rows:
                 try:
                     for a in json.loads(r["result_json"]):
-                        cn = a.get("breed_cn", "")
-                        if cn and cn not in breed_set:
-                            breed_set.append(cn)
+                        breed_counter[a.get("breed_cn", "未知")] += 1
                 except (json.JSONDecodeError, KeyError):
                     pass
 
-            # 最近检测数（近7天）
-            recent = conn.execute(
-                """SELECT COUNT(*) as cnt FROM detection
-                   WHERE location_id = ?
-                     AND date(detect_time) >= date('now', '-7 days', 'localtime')""",
+            main_breeds = [
+                MainBreed(breed_cn=b, count=c)
+                for b, c in breed_counter.most_common(3)
+            ]
+
+            # 最佳观测时段（按小时聚合找峰值）
+            time_rows = conn.execute(
+                """SELECT detect_time FROM detection
+                   WHERE location_id = ? AND total_animals > 0""",
                 (loc["id"],),
-            ).fetchone()
+            ).fetchall()
+
+            hour_counts: Counter = Counter()
+            for r in time_rows:
+                try:
+                    dt = r["detect_time"]
+                    hour = int(dt[11:13]) if len(dt) >= 13 else 0
+                    hour_counts[hour] += 1
+                except (ValueError, IndexError):
+                    pass
+
+            best_time = None
+            if hour_counts:
+                best_hour = hour_counts.most_common(1)[0][0]
+                best_time = BestTime(
+                    start=f"{best_hour:02d}:00",
+                    end=f"{best_hour+2:02d}:00",
+                )
+
+            # 文字描述
+            pattern_desc = to_pattern(appearance_rate) if appearance_rate > 0 else "暂无记录"
+            tip = TIPS.get(loc["name"], "请保持安全距离，不要随意投喂。")
 
             result.append(GuideLocation(
-                location_name=loc["name"],
-                breeds=breed_set,
-                safety_tip=loc["safety_tip"],
-                recent_count=recent["cnt"],
-                emoji="🐱",
+                name=loc["name"],
+                emoji=EMOJI_MAP.get(loc["name"], "🐱"),
+                rating=to_rating(appearance_rate),
+                appearance_rate=appearance_rate,
+                main_breeds=main_breeds,
+                best_time=best_time,
+                pattern_desc=pattern_desc,
+                tip=tip,
             ))
 
+        # 按出没率降序排列
+        result.sort(key=lambda x: x.appearance_rate, reverse=True)
         return GuideResponse(locations=result)
     finally:
         conn.close()
