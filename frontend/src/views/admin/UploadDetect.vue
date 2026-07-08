@@ -18,6 +18,7 @@
           </n-form>
 
           <n-upload
+            ref="uploadRef"
             :multiple="false"
             accept="image/jpeg,image/png"
             :max="1"
@@ -133,6 +134,7 @@ const selectedLocation = ref(null)
 const locationOptions = ref([])
 const loadingLocations = ref(false)
 const uploadFile = ref(null)
+const uploadRef = ref(null)
 const detecting = ref(false)
 const saving = ref(false)
 const saveSuccess = ref(false)
@@ -215,6 +217,7 @@ async function doSave() {
 function resetDetect() {
   detectResult.value = null
   uploadFile.value = null
+  uploadRef.value?.clear()
   saveSuccess.value = false
   savedId.value = null
 }
