@@ -1,0 +1,44 @@
+@import './tokens.css';
+
+/* ========================================
+   PawVigil Global Base Styles
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-forest-ink);
+  background: var(--color-cream-paper);
+}
+
+#app {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-forest-ink);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: var(--color-highlighter-yellow);
+  color: var(--color-forest-ink);
+}

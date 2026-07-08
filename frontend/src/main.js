@@ -1,3 +1,4 @@
+import './styles/global.css'
 import { createApp } from 'vue'
 import naive from 'naive-ui'
 import App from './App.vue'
