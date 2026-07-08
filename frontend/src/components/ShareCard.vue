@@ -1,0 +1,102 @@
+<template>
+  <n-modal v-model:show="showModal" preset="card" title="🐾 分享卡片预览" style="max-width: 640px" :mask-closable="true">
+    <div class="share-card-preview">
+      <div class="card-body">
+        <div class="card-header">
+          <div class="card-emoji">{{ emoji }}</div>
+          <div class="card-breed">我遇到了 {{ breedCn }}！</div>
+        </div>
+        <div class="card-info">
+          <div class="info-item">
+            <div class="info-label">📍 地点</div>
+            <div class="info-value">{{ locationName }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">🕐 时间</div>
+            <div class="info-value">{{ detectTime?.slice(0, 10) }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">🎯 置信度</div>
+            <div class="info-value">{{ confidencePercent }}%</div>
+          </div>
+        </div>
+        <div v-if="funFact" class="card-fun-fact">💡 {{ funFact }}</div>
+        <div class="card-footer">🐾 PawVigil · 校园流浪动物观测关爱系统</div>
+      </div>
+    </div>
+    <template #footer>
+      <n-button @click="window.open(shareUrl, '_blank')">在新窗口打开</n-button>
+    </template>
+  </n-modal>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  breedCn: { type: String, default: '未知' },
+  breedEn: { type: String, default: '' },
+  emoji: { type: String, default: '🐾' },
+  locationName: { type: String, default: '' },
+  detectTime: { type: String, default: '' },
+  confidence: { type: Number, default: 0 },
+  funFact: { type: String, default: '' },
+  detectionId: { type: [Number, String], default: 0 },
+})
+
+const emit = defineEmits(['update:show'])
+
+const showModal = computed({
+  get: () => props.show,
+  set: (v) => emit('update:show', v),
+})
+
+const confidencePercent = computed(() => Math.round(props.confidence * 100))
+const shareUrl = computed(() => `/api/public/share-card/${props.detectionId}`)
+</script>
+
+<style scoped>
+.share-card-preview {
+  width: 100%;
+}
+.card-body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+}
+.card-emoji {
+  font-size: 64px;
+}
+.card-breed {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+.card-info {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+.info-label {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.info-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+.card-fun-fact {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-top: 15px;
+  line-height: 1.5;
+}
+.card-footer {
+  margin-top: 20px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+</style>

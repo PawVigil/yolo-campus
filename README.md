@@ -67,6 +67,16 @@ yolo-campus/
 
 ## 快速开始
 
+### 后端
+
+```bash
+cd backend
+pip install fastapi uvicorn pyjwt ultralytics opencv-python
+python main.py
+# 打开 http://localhost:8000
+# Swagger 文档：http://localhost:8000/docs
+```
+
 ### 前端
 
 ```bash
@@ -78,13 +88,15 @@ npm run dev
 
 > Windows 下可直接双击 `frontend/启动前端.vbs` 一键启动。
 
-### Demo
+### 联调配置
 
-```bash
-cd demo
-pip install fastapi uvicorn ultralytics opencv-python
-python main.py
-# 打开 http://localhost:8000
+前端 `vite.config.js` 已配置代理：
+- `/api/*` → `http://localhost:8000`
+- `/uploads/*` → `http://localhost:8000`
+
+前端 `src/api/index.js` 中切换 mock/真实后端：
+```javascript
+const USE_MOCK = false  // false=连真实后端, true=用mock数据
 ```
 
 ## 作者
