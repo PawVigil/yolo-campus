@@ -260,19 +260,19 @@ onMounted(async () => {
 
 <style scoped>
 .safety-page { max-width: 1100px; }
-.page-title { margin-bottom: 20px; font-size: 22px; }
+.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
 .suggestion-card { margin-bottom: 16px; }
 .suggestion-list { display: flex; flex-direction: column; gap: 12px; }
 .form-card { margin-bottom: 16px; }
 .form-actions { display: flex; gap: 8px; margin-top: 12px; }
 .list-card { margin-bottom: 16px; }
 .title-cell { font-weight: 500; }
-.time-cell { font-size: 13px; color: #666; }
+.time-cell { font-size: 13px; color: var(--color-whisper-gray); }
 .suggestion-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .suggestion-body { flex: 1; }
 .suggestion-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-.suggestion-text { font-weight: 600; font-size: 15px; }
-.suggestion-basis { font-size: 12px; color: #999; }
-.suggestion-content { font-size: 14px; color: #555; line-height: 1.6; margin: 0; }
+.suggestion-text { font-weight: 600; font-size: 15px; color: var(--color-forest-ink); }
+.suggestion-basis { font-size: 12px; color: var(--color-whisper-gray); }
+.suggestion-content { font-size: 14px; color: var(--color-forest-ink); line-height: 1.6; margin: 0; }
 .adopt-btn { flex-shrink: 0; margin-top: 2px; }
 </style>

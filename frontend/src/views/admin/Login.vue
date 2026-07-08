@@ -75,7 +75,7 @@ async function doLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-cream-paper);
 }
 .login-card-wrapper {
   width: 100%;
@@ -84,27 +84,30 @@ async function doLogin() {
 }
 .login-header {
   text-align: center;
-  color: #fff;
+  color: var(--color-forest-ink);
   margin-bottom: 24px;
 }
 .login-logo {
   font-size: 56px;
 }
 .login-header h1 {
-  font-size: 28px;
+  font-size: 32px;
+  font-weight: var(--weight-extrabold);
   margin: 8px 0 4px;
+  letter-spacing: 0.02em;
 }
 .login-header p {
   font-size: 14px;
-  opacity: 0.8;
+  color: var(--color-whisper-gray);
 }
 .login-card {
-  border-radius: 12px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-pencil-gray);
 }
 .login-hint {
   text-align: center;
   font-size: 13px;
-  color: #909399;
+  color: var(--color-whisper-gray);
 }
 .back-link {
   display: block;

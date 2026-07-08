@@ -93,25 +93,27 @@ function doLogout() {
   min-height: 100vh;
 }
 .admin-sider {
-  background: #fafbfc;
+  background: var(--color-cream-paper);
   display: flex;
   flex-direction: column;
+  border-right: 1px solid var(--color-pencil-gray);
 }
 .sider-header {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-pencil-gray);
 }
 .sider-logo {
   font-size: 28px;
 }
 .sider-title {
-  color: #7c5ce7;
+  color: var(--color-forest-ink);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 .sider-footer {
   margin-top: auto;
@@ -119,11 +121,12 @@ function doLogout() {
   text-align: center;
 }
 .collapse-btn {
-  color: #bbb;
+  color: var(--color-pencil-gray);
   font-size: 14px;
 }
 .admin-header {
-  background: #fff;
+  background: var(--color-cream-paper);
+  border-bottom: 1px solid var(--color-pencil-gray);
 }
 .header-content {
   display: flex;
@@ -133,9 +136,10 @@ function doLogout() {
   height: 56px;
 }
 .header-title {
+  font-family: var(--font-body);
   font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-weight: var(--weight-semibold);
+  color: var(--color-forest-ink);
 }
 .header-right {
   display: flex;
@@ -144,11 +148,11 @@ function doLogout() {
 }
 .header-user {
   font-size: 14px;
-  color: #666;
+  color: var(--color-forest-ink);
 }
 .admin-content {
   padding: 24px;
-  background: #f5f7fa;
+  background: var(--color-cream-paper);
   min-height: calc(100vh - 56px);
 }
 </style>

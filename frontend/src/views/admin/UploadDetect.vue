@@ -236,18 +236,18 @@ onMounted(async () => {
 
 <style scoped>
 .upload-page { max-width: 1100px; margin: 0 auto; }
-.page-title { margin-bottom: 20px; font-size: 22px; }
+.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
 .upload-dragger-content { padding: 20px; }
 .upload-icon { opacity: 0.5; }
-.upload-text { font-size: 16px; margin: 10px 0 4px; }
-.upload-hint { font-size: 13px; color: #909399; }
+.upload-text { font-size: 16px; margin: 10px 0 4px; color: var(--color-forest-ink); }
+.upload-hint { font-size: 13px; color: var(--color-whisper-gray); }
 .file-info { margin-top: 12px; }
 .detect-btn { margin-top: 20px; }
-.tip-list { text-align: left; color: #666; font-size: 14px; }
+.tip-list { text-align: left; color: var(--color-forest-ink); font-size: 14px; }
 .tip-list li { margin-bottom: 6px; }
 .detecting-status { text-align: center; padding: 40px; }
-.detecting-status p { font-size: 16px; margin-top: 16px; color: #7c5ce7; }
-.sub-text { font-size: 13px !important; color: #909399 !important; }
+.detecting-status p { font-size: 16px; margin-top: 16px; color: var(--color-forest-ink); }
+.sub-text { font-size: 13px !important; color: var(--color-whisper-gray) !important; }
 .result-section { margin-top: 24px; }
 .result-actions { display: flex; gap: 12px; margin-top: 20px; }
 .save-alert { margin-top: 16px; }
