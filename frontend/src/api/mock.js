@@ -281,6 +281,10 @@ export async function mockGetDetections(params = {}) {
   const pageSize = params.page_size || 15
   let items = [...detections]
   if (params.location_id) items = items.filter((d) => d.location_id === parseInt(params.location_id))
+  if (params.breed) items = items.filter((d) => {
+    const breeds = (d.animals || []).map(a => a.breed_cn)
+    return breeds.some(b => b.includes(params.breed))
+  })
   if (params.date_from) items = items.filter((d) => d.detect_time >= params.date_from)
   if (params.date_to) items = items.filter((d) => d.detect_time <= params.date_to + 'T23:59:59')
   const total = items.length

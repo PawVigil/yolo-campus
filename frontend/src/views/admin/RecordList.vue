@@ -101,13 +101,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useMessage, useDialog } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 import LocationBadge from '@/components/LocationBadge.vue'
 import DetectionResult from '@/components/DetectionResult.vue'
 import { getDetections, getDetectionById, deleteDetection, getLocations } from '@/api/admin.js'
 
 const message = useMessage()
-const dialog = useDialog()
 const loading = ref(false)
 const items = ref([])
 const total = ref(0)
@@ -191,23 +190,16 @@ async function openDetail(id) {
   }
 }
 
-function doDelete(id) {
-  dialog.warning({
-    title: '确认删除',
-    content: `确定要删除检测记录 #${id} 吗？此操作不可恢复。`,
-    positiveText: '确认删除',
-    negativeText: '取消',
-    onPositiveClick: async () => {
-      try {
-        await deleteDetection(id)
-        message.success('删除成功')
-        fetchRecords()
-      } catch (e) {
-        console.error('删除失败', e)
-        message.error('删除失败')
-      }
-    },
-  })
+async function doDelete(id) {
+  if (!window.confirm(`确定要删除检测记录 #${id} 吗？此操作不可恢复。`)) return
+  try {
+    await deleteDetection(id)
+    message.success('删除成功')
+    fetchRecords()
+  } catch (e) {
+    console.error('删除失败', e)
+    message.error('删除失败')
+  }
 }
 
 function parseBreeds(summary) {

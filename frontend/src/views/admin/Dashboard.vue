@@ -75,6 +75,7 @@ function rankColor(idx) {
 
 function initBarChart() {
   if (!barChartRef.value || !data.value?.location_ranking) return
+  if (barChart) barChart.dispose()
   barChart = echarts.init(barChartRef.value)
   const names = data.value.location_ranking.map((l) => l.name)
   const counts = data.value.location_ranking.map((l) => l.count)
@@ -83,11 +84,11 @@ function initBarChart() {
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     grid: { top: 10, right: 30, bottom: 10, left: 60 },
     xAxis: { type: 'value', minInterval: 1 },
-    yAxis: { type: 'category', data: names.reverse(), axisLabel: { fontSize: 12 } },
+    yAxis: { type: 'category', data: [...names].reverse(), axisLabel: { fontSize: 12 } },
     series: [
       {
         type: 'bar',
-        data: counts.reverse(),
+        data: [...counts].reverse(),
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
             { offset: 0, color: '#7c5ce7' },
@@ -106,7 +107,7 @@ onMounted(async () => {
   try {
     data.value = await getAdminDashboard()
     await nextTick()
-    initBarChart()
+    setTimeout(() => initBarChart(), 200)
   } catch (e) {
     console.error('获取看板数据失败', e)
   } finally {

@@ -42,14 +42,14 @@
         </div>
       </n-layout-header>
       <n-layout-content class="admin-content">
-        <router-view />
+        <router-view :key="route.fullPath" />
       </n-layout-content>
     </n-layout>
   </n-layout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authStore } from '@/stores/auth.js'
 
@@ -68,17 +68,8 @@ const menuOptions = [
 
 const pageTitle = computed(() => route.meta.title || '管理端')
 
-// 根据当前路由初始化菜单高亮
-watch(
-  () => route.path,
-  (path) => {
-    const seg = path.split('/').pop()
-    activeMenu.value = seg || 'dashboard'
-  },
-  { immediate: true }
-)
-
 function onMenuChange(key) {
+  activeMenu.value = key
   router.push(`/admin/${key}`)
 }
 
@@ -101,7 +92,7 @@ function doLogout() {
   min-height: 100vh;
 }
 .admin-sider {
-  background: #001529;
+  background: #fafbfc;
   display: flex;
   flex-direction: column;
 }
@@ -110,13 +101,13 @@ function doLogout() {
   align-items: center;
   gap: 10px;
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #eee;
 }
 .sider-logo {
   font-size: 28px;
 }
 .sider-title {
-  color: #fff;
+  color: #7c5ce7;
   font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
@@ -127,7 +118,7 @@ function doLogout() {
   text-align: center;
 }
 .collapse-btn {
-  color: rgba(255, 255, 255, 0.5);
+  color: #bbb;
   font-size: 14px;
 }
 .admin-header {
