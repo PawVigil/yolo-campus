@@ -25,7 +25,7 @@
       </div>
     </div>
     <template #footer>
-      <n-button @click="window.open(shareUrl, '_blank')">在新窗口打开</n-button>
+      <n-button @click="openCard">在新窗口打开</n-button>
     </template>
   </n-modal>
 </template>
@@ -54,6 +54,10 @@ const showModal = computed({
 
 const confidencePercent = computed(() => Math.round(props.confidence * 100))
 const shareUrl = computed(() => `/api/public/share-card/${props.detectionId}`)
+
+function openCard() {
+  window.open(shareUrl.value, '_blank')
+}
 </script>
 
 <style scoped>

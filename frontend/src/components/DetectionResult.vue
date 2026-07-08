@@ -1,19 +1,15 @@
 <template>
   <div class="detection-result">
-    <n-grid :cols="2" :x-gap="16" responsive="screen">
-      <n-grid-item>
-        <div class="image-panel">
-          <div class="image-label">📷 原图</div>
-          <n-image :src="imageUrl" :fallback-src="placeholderUrl" object-fit="contain" class="detect-image" />
-        </div>
-      </n-grid-item>
-      <n-grid-item>
-        <div class="image-panel">
-          <div class="image-label">🔍 标注图</div>
-          <n-image :src="annotatedUrl" :fallback-src="placeholderUrl" object-fit="contain" class="detect-image" />
-        </div>
-      </n-grid-item>
-    </n-grid>
+    <div class="image-row">
+      <div class="image-panel">
+        <div class="image-label">📷 原图</div>
+        <n-image :src="imageUrl" :fallback-src="placeholderUrl" class="detect-image" />
+      </div>
+      <div class="image-panel">
+        <div class="image-label">🔍 标注图</div>
+        <n-image :src="annotatedUrl" :fallback-src="placeholderUrl" class="detect-image" />
+      </div>
+    </div>
 
     <n-divider />
 
@@ -73,8 +69,14 @@ function confColor(conf) {
 .detection-result {
   width: 100%;
 }
+.image-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
 .image-panel {
-  text-align: center;
+  flex: 1;
+  min-width: 0;
 }
 .image-label {
   font-size: 14px;
@@ -83,9 +85,14 @@ function confColor(conf) {
 }
 .detect-image {
   width: 100%;
-  max-height: 300px;
+  max-height: 400px;
   border-radius: 8px;
   border: 1px solid #eee;
+}
+.detect-image :deep(img) {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
 }
 .result-header {
   display: flex;

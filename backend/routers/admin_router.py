@@ -38,6 +38,20 @@ from services.safety_tip_service import SafetyTipService
 router = APIRouter(prefix="/api", tags=["管理端"], dependencies=[Depends(get_current_user)])
 
 
+def _to_url(path: str) -> str:
+    """将绝对/相对路径转为前端可用的相对URL"""
+    if not path:
+        return ""
+    p = str(path).replace("\\", "/")
+    if "uploads" in p:
+        p = p.split("uploads", 1)[1]  # /community/xxx.jpg
+        p = p.lstrip("/")
+        return f"/uploads/{p}"
+    if p.startswith("/"):
+        return p
+    return f"/{p}"
+
+
 # ======================================================================
 # B1. POST /api/upload — 上传图片+YOLO检测（预览，不存库）
 # ======================================================================
@@ -66,8 +80,8 @@ async def upload_detect(
     annotated_path = DetectionService.annotate(image_path, animals) if animals else ""
 
     return DetectionPreviewResponse(
-        image_url=f"/{image_path}",
-        annotated_url=f"/{annotated_path}" if annotated_path else "",
+        image_url=_to_url(image_path),
+        annotated_url=_to_url(annotated_path) if annotated_path else "",
         animals=[a.to_dict() for a in animals],
         total=len(animals),
     )
@@ -130,7 +144,7 @@ async def list_detections(
         DetectionListItem(
             id=it["id"],
             location_name=it["location_name"],
-            image_url=it["image_url"],
+            image_url=_to_url(it["image_url"]),
             detect_time=it["detect_time"],
             total_animals=it["total_animals"],
             breed_summary=it["breed_summary"],
@@ -157,8 +171,8 @@ async def get_detection(detection_id: int):
     return DetectionDetailResponse(
         id=det.id,
         location_name=location_name,
-        image_url=f"/{det.image_path}",
-        annotated_url=f"/uploads/annotated/annotated_{Path(det.image_path).stem}.jpg",
+        image_url=_to_url(det.image_path),
+        annotated_url=_to_url(f"uploads/annotated/annotated_{Path(det.image_path).stem}.jpg"),
         detect_time=det.detect_time,
         result_json=det.result_json,
         total_animals=det.total_animals,

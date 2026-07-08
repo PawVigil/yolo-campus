@@ -241,7 +241,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.upload-page { max-width: 1100px; }
+.upload-page { max-width: 1100px; margin: 0 auto; }
 .page-title { margin-bottom: 20px; font-size: 22px; }
 .upload-dragger-content { padding: 20px; }
 .upload-icon { opacity: 0.5; }
