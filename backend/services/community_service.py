@@ -135,6 +135,35 @@ class CommunityService:
             conn.close()
 
     @staticmethod
+    def create_from_detection(
+        image_url: str,
+        location_id: int | None = None,
+        description: str | None = None,
+        nickname: str | None = None,
+        auto_detect: bool = False,
+    ) -> CommunityShare:
+        """从检测记录分享到社区（使用已有图片URL）"""
+        from config import UPLOAD_DIR
+
+        # 将 URL 转为本地路径: /uploads/xxx.jpg → d:\train2\backend\uploads\xxx.jpg
+        clean = image_url.lstrip("/")
+        if "uploads/" in clean:
+            # 提取 uploads 之后的路径，拼接 UPLOAD_DIR 的父目录
+            idx = clean.index("uploads/")
+            local = str(UPLOAD_DIR.parent) + "\\" + clean[idx:].replace("/", "\\")
+        else:
+            local = str(UPLOAD_DIR) + "\\" + Path(clean).name
+
+        # 用本地路径列表创建，走 create 的逻辑（YOLO检测也在里面）
+        return CommunityService.create(
+            image_paths=[str(local)],
+            location_id=location_id,
+            description=description,
+            nickname=nickname,
+            auto_detect=auto_detect,
+        )
+
+    @staticmethod
     def get_list(page: int = 1, page_size: int = 15, date: str | None = None) -> PaginatedResult:
         """分页查询社区分享列表（支持按日期筛选）"""
         conn = get_db()
@@ -213,6 +242,61 @@ class CommunityService:
                 "time": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
             }
             comments.append(comment)
+            conn.execute(
+                "UPDATE community_share SET comments_json = ? WHERE id = ?",
+                (json.dumps(comments, ensure_ascii=False), share_id),
+            )
+            conn.commit()
+            return comments
+        finally:
+            conn.close()
+
+    @staticmethod
+    def delete(share_id: int) -> bool:
+        """删除社区分享（含图片文件清理）"""
+        conn = get_db()
+        try:
+            row = conn.execute(
+                "SELECT image_path FROM community_share WHERE id = ?", (share_id,)
+            ).fetchone()
+            if row is None:
+                return False
+
+            # 删除图片文件
+            import json as _json
+            try:
+                paths = _json.loads(row["image_path"])
+                if not isinstance(paths, list):
+                    paths = [str(paths)]
+            except (_json.JSONDecodeError, TypeError):
+                paths = [row["image_path"]]
+            for p in paths:
+                try:
+                    # 将 URL 转为本地路径
+                    local = Path(p.replace("/uploads/", str(COMMUNITY_DIR.parent) + "/"))
+                    if local.exists():
+                        local.unlink()
+                except Exception:
+                    pass
+
+            conn.execute("DELETE FROM community_share WHERE id = ?", (share_id,))
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+
+    @staticmethod
+    def delete_comment(share_id: int, comment_id: int) -> list[dict] | None:
+        """删除社区分享的某条评论"""
+        conn = get_db()
+        try:
+            row = conn.execute(
+                "SELECT comments_json FROM community_share WHERE id = ?", (share_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            comments = _parse_comments(row["comments_json"])
+            comments = [c for c in comments if c.get("id") != comment_id]
             conn.execute(
                 "UPDATE community_share SET comments_json = ? WHERE id = ?",
                 (json.dumps(comments, ensure_ascii=False), share_id),

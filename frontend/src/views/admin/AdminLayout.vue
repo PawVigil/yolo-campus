@@ -63,6 +63,7 @@ const menuOptions = [
   { label: '📤 上传检测', key: 'upload' },
   { label: '📋 记录管理', key: 'records' },
   { label: '⚠️ 安全提醒管理', key: 'safety-tips' },
+  { label: '📸 社区分享管理', key: 'community' },
   { label: '📥 数据导出', key: 'export' },
 ]
 
