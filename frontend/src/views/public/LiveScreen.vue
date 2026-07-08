@@ -16,6 +16,10 @@
     <n-layout-content class="live-content">
       <n-spin :show="loading">
         <template v-if="!loading && data">
+          <div class="time-range-badge">
+            <span class="badge-text">📅 近 14 天数据</span>
+          </div>
+
           <!-- 统计卡片 -->
           <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
             <n-grid-item>
@@ -111,7 +115,7 @@ function statusType(status) {
 }
 
 function statusLabel(status) {
-  return status === 'active' ? '🟢 活跃中' : status === 'resting' ? '🟡 休息中' : '⚪ 无记录'
+  return status === 'active' ? '🟢 当天' : status === 'resting' ? '🟡 昨天' : '⚪ 更早'
 }
 
 function formatTime(t) {
@@ -182,6 +186,20 @@ onUnmounted(() => {
 .admin-link {
   margin-left: auto;
 }
+.time-range-badge {
+  margin-bottom: 16px;
+  text-align: center;
+}
+.badge-text {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 8px 28px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+}
 .live-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -217,7 +235,6 @@ onUnmounted(() => {
 }
 .location-card.status-no_record {
   border-left: 4px solid #d0d0d0;
-  opacity: 0.7;
 }
 .loc-header {
   display: flex;

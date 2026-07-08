@@ -34,11 +34,11 @@ function updateChart() {
       ? { text: props.title, left: 'center', textStyle: { fontSize: 14, fontWeight: 500 } }
       : undefined,
     tooltip: { trigger: 'axis' },
-    grid: { top: props.title ? 40 : 20, right: 20, bottom: 30, left: 50 },
+    grid: { top: props.title ? 40 : 20, right: 20, bottom: 50, left: 55 },
     xAxis: {
       type: 'category',
-      data: xData,
-      axisLabel: { rotate: 30, fontSize: 11 },
+      data: xData.map(d => d.slice(5)),  // "2026-07-01" → "07-01"
+      axisLabel: { rotate: 45, fontSize: 11 },
     },
     yAxis: {
       type: 'value',

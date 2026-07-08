@@ -5,6 +5,7 @@
 import apiClient, { USE_MOCK } from './index.js'
 import {
   mockGetPublicDashboard,
+  mockGetBreedStats,
   mockGetCalendar,
   mockGetPublicDetections,
   mockGetRankings,
@@ -13,12 +14,19 @@ import {
   mockGetShareCard,
   mockUploadCommunity,
   mockGetCommunity,
+  mockAddComment,
 } from './mock.js'
 
 // C1. GET /api/public/dashboard
 export function getPublicDashboard() {
   if (USE_MOCK) return mockGetPublicDashboard()
   return apiClient.get('/api/public/dashboard').then((r) => r.data)
+}
+
+// 品种检测统计（非标准接口，前端辅助数据）
+export function getBreedStats() {
+  if (USE_MOCK) return mockGetBreedStats()
+  return apiClient.get('/api/public/breed-stats').then((r) => r.data)
 }
 
 // C2. GET /api/public/calendar
@@ -67,4 +75,10 @@ export function uploadCommunity(formData) {
 export function getCommunity(params = {}) {
   if (USE_MOCK) return mockGetCommunity(params)
   return apiClient.get('/api/public/community', { params }).then((r) => r.data)
+}
+
+// 评论（非标准接口，前端辅助）
+export function addComment(shareId, nickname, text) {
+  if (USE_MOCK) return mockAddComment(shareId, nickname, text)
+  return apiClient.post(`/api/public/community/${shareId}/comments`, { nickname, text }).then((r) => r.data)
 }
