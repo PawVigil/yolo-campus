@@ -1,0 +1,154 @@
+"""社区分享服务 —— 参考 SDS 5.2.2 CommunityService"""
+
+import json
+import uuid
+from pathlib import Path
+
+from config import COMMUNITY_DIR
+from db import get_db
+from models.community_share import CommunityShare
+from models.response import CommunityShareResponse, PaginatedResult
+from yolo_engine import engine
+
+# 品种知识库缓存
+_breed_info: dict | None = None
+
+
+def _load_breed_info() -> dict:
+    global _breed_info
+    if _breed_info is None:
+        from config import BREED_INFO_PATH
+        if BREED_INFO_PATH.exists():
+            _breed_info = json.loads(BREED_INFO_PATH.read_text(encoding="utf-8"))
+        else:
+            _breed_info = {}
+    return _breed_info
+
+
+class CommunityService:
+    """社区分享业务逻辑"""
+
+    @staticmethod
+    def save_upload_file(file_data: bytes, filename: str) -> str:
+        """保存社区分享图片到 uploads/community/"""
+        ext = Path(filename).suffix.lower()
+        save_name = f"{uuid.uuid4().hex}{ext}"
+        save_path = COMMUNITY_DIR / save_name
+        COMMUNITY_DIR.mkdir(parents=True, exist_ok=True)
+        save_path.write_bytes(file_data)
+        return str(save_path)
+
+    @staticmethod
+    def create(
+        image_path: str,
+        location_id: int | None = None,
+        description: str | None = None,
+        nickname: str | None = None,
+        auto_detect: bool = False,
+    ) -> CommunityShare:
+        """创建社区分享记录"""
+        breed: str | None = None
+        if auto_detect:
+            try:
+                animals = engine.detect(image_path)
+                if animals:
+                    breed = animals[0].breed_cn  # 取置信度最高的
+            except Exception:
+                pass  # YOLO 识别失败不影响上传
+
+        conn = get_db()
+        try:
+            cursor = conn.execute(
+                """INSERT INTO community_share
+                   (location_id, image_path, description, nickname, breed)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (location_id, image_path, description, nickname, breed),
+            )
+            conn.commit()
+
+            row = conn.execute(
+                "SELECT * FROM community_share WHERE id = ?", (cursor.lastrowid,)
+            ).fetchone()
+            return CommunityShare(
+                id=row["id"], location_id=row["location_id"],
+                image_path=row["image_path"], description=row["description"],
+                nickname=row["nickname"], breed=row["breed"],
+                created_at=row["created_at"],
+            )
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_list(page: int = 1, page_size: int = 15) -> PaginatedResult:
+        """分页查询社区分享列表"""
+        conn = get_db()
+        try:
+            total = conn.execute(
+                "SELECT COUNT(*) as c FROM community_share"
+            ).fetchone()["c"]
+
+            page = max(1, page)
+            page_size = min(max(1, page_size), 50)
+            offset = (page - 1) * page_size
+
+            rows = conn.execute(
+                """SELECT cs.*, l.name as location_name
+                   FROM community_share cs
+                   LEFT JOIN location l ON cs.location_id = l.id
+                   ORDER BY cs.created_at DESC
+                   LIMIT ? OFFSET ?""",
+                (page_size, offset),
+            ).fetchall()
+
+            breed_info = _load_breed_info()
+            items: list[CommunityShareResponse] = []
+            for r in rows:
+                bi = breed_info.get(r["breed"] or "", None)
+                items.append(CommunityShareResponse(
+                    id=r["id"],
+                    location_id=r["location_id"],
+                    location_name=r["location_name"],
+                    image_url=f"/{r['image_path']}",
+                    description=r["description"],
+                    nickname=r["nickname"],
+                    breed=r["breed"],
+                    breed_info=bi,
+                    created_at=r["created_at"],
+                ))
+
+            return PaginatedResult(
+                items=items, total=total, page=page, page_size=page_size,
+            )
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_by_id(share_id: int) -> CommunityShareResponse | None:
+        """单条查询"""
+        conn = get_db()
+        try:
+            row = conn.execute(
+                """SELECT cs.*, l.name as location_name
+                   FROM community_share cs
+                   LEFT JOIN location l ON cs.location_id = l.id
+                   WHERE cs.id = ?""",
+                (share_id,),
+            ).fetchone()
+            if row is None:
+                return None
+
+            breed_info = _load_breed_info()
+            bi = breed_info.get(row["breed"] or "", None)
+            return CommunityShareResponse(
+                id=row["id"],
+                location_id=row["location_id"],
+                location_name=row["location_name"],
+                image_url=f"/{row['image_path']}",
+                description=row["description"],
+                nickname=row["nickname"],
+                breed=row["breed"],
+                breed_info=bi,
+                created_at=row["created_at"],
+            )
+        finally:
+            conn.close()
