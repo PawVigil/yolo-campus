@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#fcfaf5"/>
+  <rect x="0" y="0" width="400" height="300" fill="#d5f5c2" opacity="0.5"/>
+  <text x="200" y="140" text-anchor="middle" font-size="64">🐱</text>
+  <text x="200" y="200" text-anchor="middle" font-size="16" font-family="sans-serif" fill="#1a3300">Cat Photo</text>
+</svg>

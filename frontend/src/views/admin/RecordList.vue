@@ -237,14 +237,14 @@ onMounted(async () => {
 
 <style scoped>
 .records-page { max-width: 1200px; }
-.page-title { margin-bottom: 20px; font-size: 22px; }
+.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
 .filter-card { margin-bottom: 16px; }
 .ml-8 { margin-left: 8px; }
 .table-card { margin-bottom: 16px; }
 .table-row { cursor: pointer; }
-.table-row:hover { background: #f8f7ff; }
+.table-row:hover { background: rgba(26, 51, 0, 0.03); }
 .breed-tag { margin: 1px; }
-.time-cell { font-size: 13px; font-family: monospace; color: #666; }
+.time-cell { font-size: 13px; font-family: var(--font-mono); color: var(--color-pencil-gray); }
 .pagination-row { display: flex; justify-content: center; margin-top: 16px; }
 .detail-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 </style>

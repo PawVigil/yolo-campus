@@ -15,11 +15,11 @@ const props = defineProps({
 })
 
 const locationPalette = {
-  '食堂': { emoji: '🍽️', bg: '#fff3e0', text: '#e65100' },
-  '宿舍': { emoji: '🏠', bg: '#e8f5e9', text: '#2e7d32' },
-  '图书馆': { emoji: '📚', bg: '#e3f2fd', text: '#1565c0' },
-  '操场': { emoji: '🏟️', bg: '#fce4ec', text: '#c62828' },
-  '花园': { emoji: '🌳', bg: '#e8eaf6', text: '#283593' },
+  '食堂':   { emoji: '🍽️', bg: '#e89970', text: '#1a3300' },
+  '宿舍':   { emoji: '🏠', bg: '#f6d0ff', text: '#1a3300' },
+  '图书馆': { emoji: '📚', bg: '#a8e5e5', text: '#1a3300' },
+  '操场':   { emoji: '🏟️', bg: '#e8e0d5', text: '#1a3300' },
+  '花园':   { emoji: '🌳', bg: '#d5f5c2', text: '#1a3300' },
 }
 
 const emoji = computed(() => locationPalette[props.name]?.emoji || '📍')

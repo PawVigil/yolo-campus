@@ -25,18 +25,20 @@ defineProps({
 .safety-ticker {
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, #fff3e0, #ffe0b2);
-  border: 1px solid #ffcc80;
-  border-radius: 8px;
-  padding: 10px 16px;
+  background: var(--color-cream-paper);
+  border: 1px solid var(--color-pencil-gray);
+  border-left: 3px solid var(--color-terracotta);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
   overflow: hidden;
   width: 100%;
 }
 .ticker-label {
   flex-shrink: 0;
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
   font-size: 14px;
-  color: #e65100;
+  color: var(--color-terracotta);
   margin-right: 16px;
   white-space: nowrap;
 }
@@ -52,10 +54,10 @@ defineProps({
 }
 .ticker-item {
   font-size: 14px;
-  color: #5d4037;
+  color: var(--color-forest-ink);
 }
 .ticker-sep {
-  color: #ffcc80;
+  color: var(--color-pencil-gray);
   margin: 0 16px;
 }
 @keyframes ticker-scroll {

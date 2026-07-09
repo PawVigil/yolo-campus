@@ -59,9 +59,9 @@ const props = defineProps({
 const placeholderUrl = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect fill="%23f0f0f0" width="400" height="300"/><text x="200" y="150" text-anchor="middle" fill="%23ccc" font-size="16">暂无图片</text></svg>'
 
 function confColor(conf) {
-  if (conf >= 0.9) return '#18a058'
-  if (conf >= 0.7) return '#f0a020'
-  return '#d03050'
+  if (conf >= 0.9) return '#1a3300'
+  if (conf >= 0.7) return '#4a6a2a'
+  return '#e89970'
 }
 </script>
 
@@ -79,15 +79,17 @@ function confColor(conf) {
   min-width: 0;
 }
 .image-label {
+  font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
+  color: var(--color-forest-ink);
   margin-bottom: 8px;
 }
 .detect-image {
   width: 100%;
   max-height: 400px;
-  border-radius: 8px;
-  border: 1px solid #eee;
+  border-radius: var(--radius-image);
+  border: 1px solid var(--color-pencil-gray);
 }
 .detect-image :deep(img) {
   width: 100%;
@@ -102,13 +104,16 @@ function confColor(conf) {
 }
 .result-header h4 {
   margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-forest-ink);
 }
 .breed-name {
   margin-left: 6px;
 }
 .box-coords {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: #909399;
+  color: var(--color-pencil-gray);
 }
 </style>

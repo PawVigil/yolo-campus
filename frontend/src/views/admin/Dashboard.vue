@@ -5,7 +5,7 @@
         <!-- 统计卡片 -->
         <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
           <n-grid-item>
-            <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
+            <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" />
           </n-grid-item>
           <n-grid-item>
             <StatCard :icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
@@ -43,7 +43,7 @@
 
         <!-- 趋势图 -->
         <n-card :bordered="false" title="📈 近14天检测趋势" class="trend-card">
-          <TrendChart :data="data.trend_14d" height="320px" color="#7c5ce7" />
+          <TrendChart :data="data.trend_14d" height="320px" />
         </n-card>
       </template>
     </n-spin>
@@ -70,8 +70,7 @@ const maxCount = computed(() => {
 })
 
 function rankColor(idx) {
-  const colors = ['#f0a020', '#c0c0c0', '#cd7f32', '#7c5ce7', '#2080f0']
-  return colors[idx] || '#7c5ce7'
+  return '#1a3300'
 }
 
 function initBarChart() {
@@ -82,23 +81,29 @@ function initBarChart() {
   const counts = data.value.location_ranking.map((l) => l.count)
 
   barChart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#fcfaf5',
+      borderColor: '#b6b6b6',
+      textStyle: { color: '#1a3300', fontSize: 12 },
+    },
     grid: { top: 10, right: 30, bottom: 10, left: 60 },
-    xAxis: { type: 'value', minInterval: 1 },
-    yAxis: { type: 'category', data: [...names].reverse(), axisLabel: { fontSize: 12 } },
+    xAxis: { type: 'value', minInterval: 1, axisLabel: { color: '#b6b6b6', fontSize: 11 } },
+    yAxis: { type: 'category', data: [...names].reverse(), axisLabel: { fontSize: 12, color: '#1a3300' } },
     series: [
       {
         type: 'bar',
         data: [...counts].reverse(),
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-            { offset: 0, color: '#7c5ce7' },
-            { offset: 1, color: '#a78bfa' },
+            { offset: 0, color: '#1a3300' },
+            { offset: 1, color: '#4a6a2a' },
           ]),
           borderRadius: [0, 4, 4, 0],
         },
         barWidth: 20,
-        label: { show: true, position: 'right', fontSize: 12 },
+        label: { show: true, position: 'right', fontSize: 12, color: '#1a3300' },
       },
     ],
   })
@@ -156,17 +161,16 @@ watch(() => data.value?.location_ranking, () => {
   gap: 12px;
 }
 .top5-rank {
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   font-size: 16px;
   width: 36px;
+  color: var(--color-forest-ink);
 }
-.rank-1 { color: #f0a020; }
-.rank-2 { color: #909399; }
-.rank-3 { color: #cd7f32; }
 .top5-breed {
   width: 80px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   flex-shrink: 0;
+  color: var(--color-forest-ink);
 }
 </style>

@@ -3,41 +3,49 @@
     <PublicNav menu-key="community" />
 
     <n-layout-content class="community-content">
-      <h2 class="page-title">📸 社区分享</h2>
+      <h2 class="page-title">社区分享</h2>
       <p class="page-subtitle">分享你在校园里发现的可爱动物吧！</p>
 
-      <!-- 日期筛选 + 上传 -->
-      <div class="top-bar">
-        <n-date-picker v-model:value="filterDate" type="date" placeholder="选择日期筛选" clearable @update:value="onDateFilter" />
-        <n-button type="primary" @click="showUpload = true">📤 上传分享</n-button>
-      </div>
+      <!-- 非对称分栏：左侧筛选 + 右侧照片墙 -->
+      <div class="community-layout">
+        <aside class="community-sidebar">
+          <n-date-picker v-model:value="filterDate" type="date" placeholder="选择日期筛选" clearable @update:value="onDateFilter" />
+          <n-button type="primary" block @click="showUpload = true">上传分享</n-button>
+        </aside>
 
-      <!-- 分享卡片列表 -->
-      <n-spin :show="loading">
-        <n-empty v-if="!loading && items.length === 0" description="今天还没有人分享" class="empty-state" />
-        <div v-else class="community-grid">
-          <n-card v-for="item in items" :key="item.id" :bordered="false" class="community-card" @click="openDetail(item)">
-            <img :src="item.images[0]" class="cover-image" height="300" />
-            <div class="card-info">
-              <div class="card-top-row">
-                <LocationBadge v-if="item.location_name" :name="item.location_name" />
-                <n-tag v-if="item.breed" type="info" size="small" round>{{ item.breed }}</n-tag>
-                <span class="photo-count">{{ item.images.length }} 张</span>
-              </div>
-              <p v-if="item.description" class="card-desc">{{ item.description }}</p>
-              <div class="card-bottom">
-                <span v-if="item.nickname" class="card-nickname">{{ item.nickname }}</span>
-                <span class="card-time">{{ fmtTime(item.created_at) }}</span>
-                <span class="card-comments">💬 {{ item.comments?.length || 0 }}</span>
+        <!-- 分享卡片列表 -->
+        <div class="community-main">
+          <n-spin :show="loading">
+            <div v-if="!loading && items.length === 0" class="empty-state">
+              <div class="empty-illustration">—</div>
+              <p class="empty-title">还没有人分享</p>
+              <p class="empty-hint">拍到校园里的小动物？点击左侧「上传分享」成为第一个</p>
+            </div>
+            <div v-else class="community-grid">
+              <div v-for="item in items" :key="item.id" class="community-card" @click="openDetail(item)">
+                <img :src="item.images[0]" class="cover-image" height="300" />
+                <div class="card-info">
+                  <div class="card-top-row">
+                    <LocationBadge v-if="item.location_name" :name="item.location_name" />
+                    <n-tag v-if="item.breed" type="info" size="small" round>{{ item.breed }}</n-tag>
+                    <span class="photo-count">{{ item.images.length }} 张</span>
+                  </div>
+                  <p v-if="item.description" class="card-desc">{{ item.description }}</p>
+                  <div class="card-bottom">
+                    <span v-if="item.nickname" class="card-nickname">{{ item.nickname }}</span>
+                    <span class="card-time">{{ fmtTime(item.created_at) }}</span>
+                    <span class="card-comments">{{ item.comments?.length || 0 }} 条评论</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </n-card>
+          </n-spin>
         </div>
-      </n-spin>
+      </div>
     </n-layout-content>
 
     <!-- 详情弹窗：多图+评论 -->
-    <n-modal v-model:show="showDetail" preset="card" title="📸 分享详情" style="max-width: 680px" :mask-closable="true">
+    <n-modal v-model:show="showDetail" preset="card" title="分享详情" style="max-width: 680px" :mask-closable="true">
       <template v-if="detailItem">
         <!-- 图片轮播 -->
         <div class="gallery">
@@ -57,7 +65,7 @@
 
         <!-- 评论区 -->
         <div class="comments-section">
-          <h4>💬 评论（{{ detailItem.comments?.length || 0 }}）</h4>
+          <h4>评论（{{ detailItem.comments?.length || 0 }}）</h4>
           <div v-if="!detailItem.comments?.length" class="no-comments">暂无评论</div>
           <div v-for="c in detailItem.comments" :key="c.id" class="comment-item">
             <span class="comment-nick">{{ c.nickname || '匿名' }}</span>
@@ -74,7 +82,7 @@
     </n-modal>
 
     <!-- 上传弹窗 -->
-    <n-modal v-model:show="showUpload" preset="card" title="📤 分享你的发现" style="max-width: 560px" :mask-closable="true">
+    <n-modal v-model:show="showUpload" preset="card" title="分享你的发现" style="max-width: 560px" :mask-closable="true">
       <n-form label-placement="top">
         <n-form-item label="选择照片（可多张）">
           <n-upload multiple accept="image/jpeg,image/png" :max="9" @change="onFilesChange">
@@ -204,44 +212,78 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.community-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
+.community-page { min-height: 100vh; background: var(--color-cream-paper); }
 .community-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
-.page-title { text-align: center; font-size: 28px; margin-bottom: 4px; }
-.page-subtitle { text-align: center; color: #909399; margin-bottom: 20px; }
-.top-bar { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; align-items: center; }
-.empty-state { margin-top: 80px; }
+.page-title { text-align: left; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
+.page-subtitle { text-align: left; color: var(--color-whisper-gray); margin-bottom: 20px; }
+/* Asymmetric split: left sidebar + right photo wall */
+.community-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.community-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.community-main {
+  flex: 1;
+  min-width: 0;
+}
+.empty-state { margin-top: 80px; text-align: center; }
+.empty-illustration { font-size: 64px; opacity: 0.5; margin-bottom: 16px; }
+.empty-title { font-family: var(--font-body); font-size: 18px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); margin: 0 0 8px; }
+.empty-hint { font-family: var(--font-body); font-size: 14px; color: var(--color-whisper-gray); margin: 0; }
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.community-card { cursor: pointer; transition: all 0.3s; position: relative; }
-.community-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-.cover-image { width: 100%; height: 300px; object-fit: cover; border-radius: 8px; display: block; }
-.photo-count { color: #7c5ce7; font-size: 12px; font-weight: 600; margin-left: auto; }
+.community-card { cursor: pointer; position: relative; background: var(--color-cream-paper); border-radius: 6px; padding: 8px; box-shadow: 1px 1px 3px rgba(0,0,0,0.08); transition: transform 0.2s ease, box-shadow 0.2s ease; animation: card-rise 0.5s ease both; }
+.community-card:nth-child(1) { animation-delay: 0.04s; }
+.community-card:nth-child(2) { animation-delay: 0.08s; }
+.community-card:nth-child(3) { animation-delay: 0.12s; }
+.community-card:nth-child(4) { animation-delay: 0.16s; }
+.community-card:nth-child(5) { animation-delay: 0.20s; }
+.community-card:nth-child(6) { animation-delay: 0.24s; }
+.community-card:nth-child(7) { animation-delay: 0.28s; }
+.community-card:nth-child(8) { animation-delay: 0.32s; }
+.community-card:nth-child(9) { animation-delay: 0.36s; }
+.community-card:nth-child(10) { animation-delay: 0.40s; }
+.community-card:nth-child(11) { animation-delay: 0.44s; }
+.community-card:nth-child(12) { animation-delay: 0.48s; }
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.community-card:nth-child(3n+1) { transform: rotate(-0.3deg); }
+.community-card:nth-child(3n+2) { transform: rotate(0.2deg); }
+.community-card:nth-child(3n+3) { transform: rotate(-0.2deg); }
+.community-card:hover { transform: rotate(0deg) translateY(-3px) !important; box-shadow: 3px 3px 8px rgba(0,0,0,0.12); }
+.cover-image { width: 100%; height: 280px; object-fit: cover; border-radius: 3px; display: block; }
+.photo-count { color: var(--color-forest-ink); font-size: 12px; font-weight: 600; margin-left: auto; }
 .card-info { padding-top: 12px; }
 .card-top-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-.card-desc { font-size: 14px; color: #555; margin: 6px 0; }
-.card-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #999; }
-.card-nickname { color: #7c5ce7; }
-.card-comments { color: #aaa; }
+.card-desc { font-size: 14px; color: var(--color-forest-ink); margin: 6px 0; }
+.card-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--color-whisper-gray); }
+.card-nickname { color: var(--color-forest-ink); font-weight: var(--weight-medium); }
+.card-comments { color: var(--color-pencil-gray); }
 
 .gallery { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.gallery-img { width: 200px; height: 150px; object-fit: cover; border-radius: 8px; }
-.detail-info p { color: #555; margin: 0 0 8px; }
-.detail-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #999; }
+.gallery-img { width: 200px; height: 150px; object-fit: cover; border-radius: var(--radius-image); }
+.detail-info p { color: var(--color-forest-ink); margin: 0 0 8px; }
+.detail-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--color-whisper-gray); }
 
-.comments-section h4 { margin: 0 0 12px; }
-.no-comments { color: #ccc; font-size: 13px; text-align: center; padding: 20px; }
-.comment-item { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
-.comment-nick { font-weight: 600; color: #7c5ce7; font-size: 13px; }
-.comment-text { font-size: 14px; color: #333; flex: 1; }
-.comment-time { font-size: 11px; color: #ccc; }
+.comments-section h4 { margin: 0 0 12px; color: var(--color-forest-ink); }
+.no-comments { color: var(--color-pencil-gray); font-size: 13px; text-align: center; padding: 20px; }
+.comment-item { padding: 8px 0; border-bottom: 1px solid var(--color-pencil-gray); display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.comment-nick { font-weight: 600; color: var(--color-forest-ink); font-size: 13px; }
+.comment-text { font-size: 14px; color: var(--color-forest-ink); flex: 1; }
+.comment-time { font-size: 11px; color: var(--color-pencil-gray); }
 .comment-input { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
 .nick-input { width: 120px; flex-shrink: 0; }
 
 .upload-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.preview-chip { font-size: 12px; background: #f0ebff; color: #7c5ce7; padding: 2px 8px; border-radius: 4px; }
+.preview-chip { font-size: 12px; background: var(--surface-mint); color: var(--color-forest-ink); padding: 2px 8px; border-radius: var(--radius-sm); }
 </style>

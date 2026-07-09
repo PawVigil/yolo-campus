@@ -1,93 +1,121 @@
 <template>
   <div class="live-screen">
-    <!-- 顶部导航 -->
     <PublicNav menu-key="live" />
 
-    <!-- 正文 -->
-    <n-layout-content class="live-content">
+    <div class="live-content">
       <n-spin :show="loading">
-        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <n-empty v-if="!loading && error" description="数据加载失败 — 请检查网络连接后刷新页面" class="error-state" :show-icon="false" />
         <template v-else-if="!loading && data">
-          <div class="time-range-badge">
-            <span class="badge-text">📅 近 14 天数据</span>
+          <!-- Hero 区域 — 墨印头条 -->
+          <div class="hero-section">
+            <div class="hero-bg-number" aria-hidden="true">{{ data.stats.total_detections }}</div>
+            <div class="hero-top">
+              <div class="hero-title-col">
+                <h1 class="hero-title">校园动物实时观测</h1>
+                <p class="hero-subtitle">YOLOv8 智能检测 · 覆盖 {{ data.stats.locations_covered }} 个校园地点 · 近 14 天数据</p>
+              </div>
+              <div class="hero-stat-primary">
+                <span class="hero-stat-number">{{ animatedNumber }}</span>
+                <span class="hero-stat-label">总检测数</span>
+              </div>
+            </div>
+            <div class="hero-divider"></div>
+            <div class="hero-stats-secondary">
+              <span class="stats-sec-item">{{ data.stats.with_animals }} <em>有动物</em></span>
+              <span class="stats-sep">·</span>
+              <span class="stats-sec-item">{{ data.stats.locations_covered }} <em>覆盖地点</em></span>
+              <span class="stats-sep">·</span>
+              <span class="stats-sec-item click-stat" @click="router.push('/breeds')">{{ data.stats.breed_count }} <em>品种数</em></span>
+            </div>
           </div>
 
-          <!-- 统计卡片 -->
-          <n-grid :cols="4" :x-gap="16" :y-gap="16" responsive="screen" class="stats-row">
-            <n-grid-item>
-              <StatCard :icon="CameraOutline" :value="data.stats.total_detections" label="总检测数" color="#7c5ce7" />
-            </n-grid-item>
-            <n-grid-item>
-              <StatCard :icon="PawOutline" :value="data.stats.with_animals" label="有动物记录" color="#18a058" />
-            </n-grid-item>
-            <n-grid-item>
-              <StatCard :icon="LocationOutline" :value="data.stats.locations_covered" label="覆盖地点" color="#f0a020" />
-            </n-grid-item>
-            <n-grid-item>
-              <div class="click-stat" @click="router.push('/breeds')">
-                <StatCard :icon="GitBranchOutline" :value="data.stats.breed_count" label="品种数" color="#2080f0" />
+          <!-- 地点状态卡片 — pastel 满铺背景 -->
+          <h3 class="section-title">各地点实时状态</h3>
+          <div class="location-cards">
+            <StickyNote
+              v-for="(loc, i) in data.location_status"
+              :key="loc.id"
+              :color="locColors[loc.name] || 'var(--surface-cream)'"
+              :rotate="rotations[i]"
+            >
+              <div class="loc-header">
+                <span class="loc-emoji">{{ loc.emoji }}</span>
+                <span class="loc-name">{{ loc.name }}</span>
+                <span class="loc-status" :class="`status-${loc.status}`">
+                  <span class="status-dot"></span>
+                  {{ statusLabel(loc.status) }}
+                </span>
               </div>
-            </n-grid-item>
-          </n-grid>
-
-          <!-- 地点状态卡片 -->
-          <h3 class="section-title">📍 各地点实时状态</h3>
-          <n-grid :cols="5" :x-gap="16" :y-gap="16" responsive="screen" class="location-cards">
-            <n-grid-item v-for="loc in data.location_status" :key="loc.id">
-              <n-card :bordered="false" class="location-card" :class="`status-${loc.status}`">
-                <div class="loc-header">
-                  <span class="loc-emoji">{{ loc.emoji }}</span>
-                  <span class="loc-name">{{ loc.name }}</span>
-                  <n-tag :type="statusType(loc.status)" size="small" round>{{ statusLabel(loc.status) }}</n-tag>
+              <div class="loc-body">
+                <div v-if="loc.recent_breeds?.length" class="loc-breeds">
+                  <span v-for="b in loc.recent_breeds" :key="b" class="breed-tag">{{ b }}</span>
                 </div>
-                <div class="loc-body">
-                  <div v-if="loc.recent_breeds?.length" class="loc-breeds">
-                    <n-tag v-for="b in loc.recent_breeds" :key="b" size="tiny" round class="breed-tag">{{ b }}</n-tag>
-                  </div>
-                  <div v-else class="loc-empty">暂无记录</div>
-                </div>
-                <div class="loc-time" v-if="loc.last_detect_time">
-                  最近：{{ formatTime(loc.last_detect_time) }}
-                </div>
-              </n-card>
-            </n-grid-item>
-          </n-grid>
+                <div v-else class="loc-empty">暂无记录</div>
+              </div>
+              <div class="loc-time" v-if="loc.last_detect_time">
+                最近：{{ formatTime(loc.last_detect_time) }}
+              </div>
+            </StickyNote>
+          </div>
 
           <!-- 趋势图 -->
-          <n-card :bordered="false" class="chart-card">
-            <TrendChart :data="data.trend_14d" title="📈 近14天检测趋势" height="320px" color="#7c5ce7" />
-          </n-card>
+          <div class="chart-card">
+            <TrendChart :data="data.trend_14d" title="近14天检测趋势" height="320px" />
+          </div>
 
           <!-- 安全提醒滚动条 -->
           <SafetyTicker :tips="data.safety_tips" />
         </template>
       </n-spin>
-    </n-layout-content>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { CameraOutline, PawOutline, LocationOutline, GitBranchOutline } from '@vicons/ionicons5'
-import StatCard from '@/components/StatCard.vue'
 import TrendChart from '@/components/TrendChart.vue'
 import SafetyTicker from '@/components/SafetyTicker.vue'
 import PublicNav from '@/components/PublicNav.vue'
+import StickyNote from '@/components/StickyNote.vue'
 import { getPublicDashboard } from '@/api/public.js'
 
 const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
 const error = ref(false)
+const animatedNumber = ref(0)
 let timer = null
+let animFrame = null
 
-function statusType(status) {
-  return status === 'active' ? 'success' : status === 'resting' ? 'warning' : 'default'
+function animateCountUp(target) {
+  if (animFrame) cancelAnimationFrame(animFrame)
+  const duration = 1200
+  const start = performance.now()
+  const from = animatedNumber.value
+  const diff = target - from
+  function tick(now) {
+    const elapsed = now - start
+    const progress = Math.min(elapsed / duration, 1)
+    // ease-out cubic
+    const eased = 1 - Math.pow(1 - progress, 3)
+    animatedNumber.value = Math.round(from + diff * eased)
+    if (progress < 1) animFrame = requestAnimationFrame(tick)
+  }
+  animFrame = requestAnimationFrame(tick)
 }
 
+const locColors = {
+  '食堂': 'var(--surface-terracotta)',
+  '宿舍': 'var(--surface-blush)',
+  '图书馆': 'var(--surface-teal)',
+  '操场': 'var(--surface-sand)',
+  '花园': 'var(--surface-mint)',
+}
+const rotations = [-0.8, 0.5, -0.4, 0.7, -0.3]
+
 function statusLabel(status) {
-  return status === 'active' ? '🟢 当天' : status === 'resting' ? '🟡 昨天' : '⚪ 更早'
+  return status === 'active' ? '今天活跃' : status === 'resting' ? '昨天有记录' : '近期无记录'
 }
 
 function formatTime(t) {
@@ -104,6 +132,7 @@ async function fetchData() {
   error.value = false
   try {
     data.value = await getPublicDashboard()
+    animateCountUp(data.value.stats.total_detections)
   } catch (e) {
     console.error('获取大屏数据失败', e)
     error.value = true
@@ -119,64 +148,185 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(timer)
+  if (animFrame) cancelAnimationFrame(animFrame)
 })
 </script>
 
 <style scoped>
 .live-screen {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f3ff 0%, #f5f7fa 100%);
+  background: var(--color-cream-paper);
 }
-.time-range-badge {
-  margin-bottom: 16px;
-  text-align: center;
-}
-.badge-text {
-  display: inline-block;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 8px 28px;
-  border-radius: 999px;
-  letter-spacing: 1px;
-}
+
 .live-content {
-  max-width: 1200px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: 40px 20px 60px;
 }
-.stats-row {
+
+/* Hero section — ink-stamp headline */
+.hero-section {
+  position: relative;
+  text-align: left;
+  padding: 32px 0 48px;
+  overflow: hidden;
+}
+
+/* Giant watermark number behind everything */
+.hero-bg-number {
+  position: absolute;
+  right: -40px;
+  top: -30px;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 340px;
+  line-height: 1;
+  color: var(--color-forest-ink);
+  opacity: 0.035;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.06em;
+  z-index: 0;
+}
+
+.hero-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
   margin-bottom: 24px;
+}
+.hero-title-col {
+  flex: 1;
+}
+.hero-title {
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  font-size: 36px;
+  line-height: 1.15;
+  color: var(--color-forest-ink);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: 15px;
+  color: var(--color-whisper-gray);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Primary stat — massive ink-stamp number */
+.hero-stat-primary {
+  text-align: right;
+  flex-shrink: 0;
+  position: relative;
+}
+.hero-stat-primary::before {
+  content: '';
+  position: absolute;
+  inset: -12px -20px;
+  background: radial-gradient(ellipse at 60% 50%, var(--color-forest-ink) 0%, transparent 70%);
+  opacity: 0.03;
+  border-radius: var(--radius-card);
+  z-index: -1;
+}
+.hero-stat-number {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 220px;
+  line-height: 0.85;
+  color: var(--color-forest-ink);
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.05em;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.03);
+}
+.hero-stat-label {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-caption);
+  color: var(--color-whisper-gray);
+  margin-top: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Divider — heavy rule like newspaper */
+.hero-divider {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 2px;
+  background: var(--color-forest-ink);
+  margin-bottom: 16px;
+}
+
+/* Secondary stats row */
+.hero-stats-secondary {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-forest-ink);
+}
+.stats-sec-item {
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum';
+}
+.stats-sec-item em {
+  font-style: normal;
+  font-weight: var(--weight-regular);
+  color: var(--color-whisper-gray);
+  margin-left: 2px;
+}
+.stats-sep {
+  color: var(--color-pencil-gray);
+  font-weight: var(--weight-regular);
 }
 .click-stat {
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: color var(--transition-fast);
 }
 .click-stat:hover {
-  transform: scale(1.03);
+  color: var(--color-terracotta);
 }
+
+/* Section title */
 .section-title {
-  margin: 24px 0 16px;
-  font-size: 18px;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-subheading);
+  color: var(--color-forest-ink);
+  margin: 0 0 16px;
 }
-.location-card {
-  transition: all 0.3s;
-  min-height: 140px;
+
+/* Location cards — uneven sized sticky notes */
+.location-cards {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 32px;
 }
-.location-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+/* Size differentiation */
+.location-cards > :nth-child(1) { flex: 1.25; }
+.location-cards > :nth-child(2),
+.location-cards > :nth-child(3) { flex: 1; }
+.location-cards > :nth-child(4),
+.location-cards > :nth-child(5) { flex: 0.85; }
+/* Vertical offset — staggered like real sticky notes */
+.location-cards > :nth-child(even) {
+  margin-top: 36px;
 }
-.location-card.status-active {
-  border-left: 4px solid #18a058;
-}
-.location-card.status-resting {
-  border-left: 4px solid #f0a020;
-}
-.location-card.status-no_record {
-  border-left: 4px solid #d0d0d0;
-}
+
 .loc-header {
   display: flex;
   align-items: center;
@@ -185,29 +335,106 @@ onUnmounted(() => {
 }
 .loc-emoji {
   font-size: 24px;
+  line-height: 1;
 }
 .loc-name {
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-body);
+  color: var(--color-forest-ink);
   flex: 1;
 }
+
+/* Status indicator */
+.loc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-forest-ink);
+  background: var(--color-cream-paper);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-pencil-gray);
+}
+.status-active .status-dot {
+  background: var(--color-forest-ink);
+}
+.status-resting .status-dot {
+  background: var(--color-terracotta);
+}
+
 .loc-breeds {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
 }
+.breed-tag {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-forest-ink);
+  background: var(--color-cream-paper);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
 .loc-empty {
-  color: #909399;
+  font-family: var(--font-body);
+  color: var(--color-whisper-gray);
   font-size: 13px;
 }
 .loc-time {
   margin-top: 12px;
-  font-size: 12px;
-  color: #909399;
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-whisper-gray);
 }
+
+/* Chart */
 .chart-card {
-  margin: 24px 0;
+  background: var(--color-cream-paper);
+  border: 1px solid var(--color-pencil-gray);
+  border-radius: var(--radius-card);
+  padding: var(--card-padding);
+  margin: 32px 0;
 }
+
 .error-state {
   margin-top: 80px;
+}
+
+@media (max-width: 900px) {
+  .hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .hero-bg-number {
+    font-size: 200px;
+    right: -20px;
+    top: -10px;
+  }
+  .hero-stat-number {
+    font-size: 120px;
+  }
+  .location-cards {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .location-cards > * {
+    flex: 1 1 160px !important;
+  }
+  .location-cards > :nth-child(even) {
+    margin-top: 0;
+  }
+  .hero-stats-secondary {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 </style>

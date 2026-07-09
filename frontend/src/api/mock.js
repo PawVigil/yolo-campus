@@ -83,17 +83,23 @@ const safetyTips = [
 ]
 
 // ---- 社区分享 mock ----
-// ---- 社区分享 mock（多图+评论，使用真实动物占位照片）----
-function catPhoto(id) { return `https://cataas.com/cat?width=400&height=300&random=${id}` }
-function dogPhoto(id) { return `https://placedog.net/400/300?random=${id}` }
+// ---- 社区分享 mock（多图+评论，使用本地 SVG 占位图）----
+const CAT_PHOTOS = ['/placeholders/cat1.svg','/placeholders/cat2.svg','/placeholders/cat3.svg']
+const DOG_PHOTOS = ['/placeholders/dog1.svg','/placeholders/dog2.svg','/placeholders/dog3.svg']
+function catPhoto(id) { return CAT_PHOTOS[id % CAT_PHOTOS.length] }
+function dogPhoto(id) { return DOG_PHOTOS[id % DOG_PHOTOS.length] }
 
 const communityItems = [
-  { id: 1, images: [catPhoto(11), catPhoto(12)], location_name: '花园', description: '在花园发现一只超可爱的英国短毛猫！', nickname: '猫猫侠', breed: '英国短毛猫', created_at: '2026-07-08T07:30:00', comments: [{ id: 1, nickname: '路人甲', text: '好可爱！在哪看到的？', time: '2026-07-08T08:00:00' },{ id: 2, nickname: '猫猫侠', text: '花园长椅附近~', time: '2026-07-08T08:05:00' }] },
-  { id: 2, images: [catPhoto(13), catPhoto(14)], location_name: '食堂', description: '食堂后面的孟买猫，每天都来', nickname: '干饭人', breed: '孟买猫', created_at: '2026-07-07T12:15:00', comments: [{ id: 3, nickname: '学霸猫', text: '我也经常看到它！', time: '2026-07-07T13:00:00' }] },
-  { id: 3, images: [catPhoto(15), dogPhoto(11), catPhoto(16)], location_name: '图书馆', description: '图书馆旁边有一只布偶猫，超级亲人！还有一只柴犬', nickname: '学霸猫', breed: '布偶猫', created_at: '2026-07-08T08:45:00', comments: [{ id: 4, nickname: '干饭人', text: '布偶猫也太好看了吧！', time: '2026-07-08T09:00:00' }] },
-  { id: 4, images: [dogPhoto(12), dogPhoto(13)], location_name: '操场', description: '操场上看到一只柴犬在跑步', nickname: '运动达人', breed: '柴犬', created_at: '2026-07-08T06:30:00', comments: [{ id: 5, nickname: '干饭人', text: '哈哈它每天都来跑步', time: '2026-07-08T07:00:00' }] },
-  { id: 5, images: [catPhoto(17)], location_name: '宿舍', description: '宿舍楼下偶遇一只俄罗斯蓝猫', nickname: '猫奴', breed: '俄罗斯蓝猫', created_at: '2026-07-08T09:10:00', comments: [] },
-  { id: 6, images: [dogPhoto(14), dogPhoto(15), dogPhoto(16)], location_name: '花园', description: '三只狗狗在花园草坪上玩耍', nickname: '汪星人', breed: '比格犬', created_at: '2026-07-08T09:20:00', comments: [{ id: 6, nickname: '猫猫侠', text: '太欢乐了！', time: '2026-07-08T09:35:00' }] },
+  { id: 1, images: [catPhoto(11), catPhoto(12)], location_name: '花园', description: '在花园发现一只超可爱的英国短毛猫！', nickname: '猫猫侠', breed: '英国短毛猫', created_at: '2026-07-09T07:30:00', comments: [{ id: 1, nickname: '路人甲', text: '好可爱！在哪看到的？', time: '2026-07-09T08:00:00' },{ id: 2, nickname: '猫猫侠', text: '花园长椅附近~', time: '2026-07-09T08:05:00' }] },
+  { id: 2, images: [catPhoto(13), catPhoto(14)], location_name: '食堂', description: '食堂后面的孟买猫，每天都来', nickname: '干饭人', breed: '孟买猫', created_at: '2026-07-09T12:15:00', comments: [{ id: 3, nickname: '学霸猫', text: '我也经常看到它！', time: '2026-07-09T13:00:00' }] },
+  { id: 3, images: [catPhoto(15), dogPhoto(11), catPhoto(16)], location_name: '图书馆', description: '图书馆旁边有一只布偶猫，超级亲人！还有一只柴犬', nickname: '学霸猫', breed: '布偶猫', created_at: '2026-07-09T08:45:00', comments: [{ id: 4, nickname: '干饭人', text: '布偶猫也太好看了吧！', time: '2026-07-09T09:00:00' }, { id: 7, nickname: '猫猫侠', text: '明天我也去看看！', time: '2026-07-09T09:30:00' }] },
+  { id: 4, images: [dogPhoto(12), dogPhoto(13)], location_name: '操场', description: '操场上看到一只柴犬在跑步', nickname: '运动达人', breed: '柴犬', created_at: '2026-07-09T06:30:00', comments: [{ id: 5, nickname: '干饭人', text: '哈哈它每天都来跑步', time: '2026-07-09T07:00:00' }] },
+  { id: 5, images: [catPhoto(17)], location_name: '宿舍', description: '宿舍楼下偶遇一只俄罗斯蓝猫，蓝灰色的毛太好看了', nickname: '猫奴', breed: '俄罗斯蓝猫', created_at: '2026-07-09T09:10:00', comments: [] },
+  { id: 6, images: [dogPhoto(14), dogPhoto(15), dogPhoto(16)], location_name: '花园', description: '三只狗狗在花园草坪上玩耍，太欢乐了', nickname: '汪汪队', breed: '比格犬', created_at: '2026-07-09T09:20:00', comments: [{ id: 6, nickname: '猫猫侠', text: '好热闹！', time: '2026-07-09T09:35:00' }] },
+  { id: 7, images: [catPhoto(18), catPhoto(19)], location_name: '食堂', description: '午饭时间在食堂后面发现一只暹罗猫，眼睛好蓝', nickname: '吃货本人', breed: '暹罗猫', created_at: '2026-07-09T12:00:00', comments: [{ id: 8, nickname: '猫奴', text: '暹罗猫超聪明的！', time: '2026-07-09T12:30:00' }] },
+  { id: 8, images: [dogPhoto(17)], location_name: '操场', description: '晨跑遇到一只哈瓦那犬，毛茸茸的超可爱', nickname: '早起鸟', breed: '哈瓦那犬', created_at: '2026-07-09T06:00:00', comments: [] },
+  { id: 9, images: [catPhoto(20), catPhoto(21), catPhoto(22)], location_name: '图书馆', description: '图书馆后门台阶上三只小猫在晒太阳，画面太治愈了', nickname: '书虫', breed: '波斯猫', created_at: '2026-07-08T15:30:00', comments: [{ id: 9, nickname: '学霸猫', text: '我也看到了！每天下午都在', time: '2026-07-08T16:00:00' }, { id: 10, nickname: '猫猫侠', text: '波斯猫好优雅', time: '2026-07-08T16:20:00' }] },
+  { id: 10, images: [dogPhoto(18), dogPhoto(19)], location_name: '宿舍', description: '宿舍区出现一只萨摩耶，笑起来太治愈了', nickname: '铲屎官', breed: '萨摩耶', created_at: '2026-07-08T17:00:00', comments: [{ id: 11, nickname: '汪汪队', text: '萨摩耶的微笑！', time: '2026-07-08T17:15:00' }] },
 ]
 
 // ---- 排行榜 mock ----

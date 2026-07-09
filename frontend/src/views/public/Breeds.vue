@@ -4,10 +4,10 @@
 
     <n-layout-content class="breeds-content">
       <n-spin :show="loading">
-        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <n-empty v-if="!loading && error" description="数据加载失败 — 请检查网络连接后刷新页面" class="error-state" :show-icon="false" />
         <template v-else-if="!loading">
           <div class="hero">
-            <h1>🐾 校园动物品种百科</h1>
+            <h1>校园动物品种百科</h1>
             <p>
               YOLOv8 可识别 <strong>37</strong> 种 · {{ cats.length }} 猫 + {{ dogs.length }} 狗
               &nbsp;|&nbsp; 已监测 <strong class="green">{{ detectedCats + detectedDogs }}</strong> 种
@@ -15,27 +15,32 @@
           </div>
 
           <div class="tabs">
-            <div class="tab" :class="{ active: activeTab === 'cat' }" @click="activeTab = 'cat'">🐱 猫咪（{{ cats.length }}）</div>
-            <div class="tab" :class="{ active: activeTab === 'dog' }" @click="activeTab = 'dog'">🐕 狗狗（{{ dogs.length }}）</div>
+            <div class="tab" :class="{ active: activeTab === 'cat' }" @click="activeTab = 'cat'">猫咪（{{ cats.length }}）</div>
+            <div class="tab" :class="{ active: activeTab === 'dog' }" @click="activeTab = 'dog'">狗狗（{{ dogs.length }}）</div>
           </div>
 
-          <h2 class="sec-title" v-if="activeTab === 'cat'">🐱 猫咪品种</h2>
-          <h2 class="sec-title" v-else>🐕 狗狗品种</h2>
+          <h2 class="sec-title" v-if="activeTab === 'cat'">猫咪品种</h2>
+          <h2 class="sec-title" v-else>狗狗品种</h2>
 
           <div class="grid">
-            <n-card v-for="b in filteredBreeds" :key="b.key" :bordered="false" class="card" :class="[b.type, { undetected: b.detectCount === 0 }]">
+            <PaperCard
+              v-for="b in filteredBreeds"
+              :key="b.key"
+              :stripe="b.detectCount > 0 ? (b.type === 'cat' ? 'mint' : 'sand') : 'none'"
+              :class="['breed-card', b.type, { undetected: b.detectCount === 0 }]"
+            >
               <div class="card-emoji">{{ b.emoji }}</div>
               <h3>{{ b.name_cn }}</h3>
               <p class="en-name">{{ b.en_display }}</p>
               <div class="badge-row">
-                <n-tag v-if="b.detectCount > 0" type="success" size="small" round>📸 监测 {{ b.detectCount }} 次</n-tag>
-                <n-tag v-else type="default" size="small" round>🔍 暂未监测到</n-tag>
+                <InkTag v-if="b.detectCount > 0" variant="ink">监测 {{ b.detectCount }} 次</InkTag>
+                <InkTag v-else variant="ghost">暂未监测到</InkTag>
               </div>
-              <n-divider />
-              <div class="attr"><span class="lbl">体型</span><n-tag size="small" round>{{ b.size }}</n-tag></div>
-              <div class="attr"><span class="lbl">性格</span>{{ b.temperament }}</div>
-              <div class="fact">💡 {{ b.fun_fact }}</div>
-            </n-card>
+              <div class="card-divider"></div>
+              <div class="attr"><span class="lbl">体型</span><InkTag variant="mint">{{ b.size }}</InkTag></div>
+              <div class="attr"><span class="lbl">性格</span><span class="attr-val">{{ b.temperament }}</span></div>
+              <div class="fact">{{ b.fun_fact }}</div>
+            </PaperCard>
           </div>
         </template>
       </n-spin>
@@ -47,6 +52,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PublicNav from '@/components/PublicNav.vue'
+import PaperCard from '@/components/PaperCard.vue'
+import InkTag from '@/components/InkTag.vue'
 import { getBreedStats } from '@/api/public.js'
 
 const router = useRouter()
@@ -100,35 +107,61 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.breeds-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
+.breeds-page { min-height: 100vh; background: var(--color-cream-paper); }
 .breeds-content { max-width: 1300px; margin: 0 auto; padding: 24px 20px 60px; }
-.hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea18, #764ba218); border-radius: 16px; margin-bottom: 24px; }
-.hero h1 { font-size: 32px; color: #7c5ce7; margin: 0 0 8px; }
-.hero p { color: #909399; margin: 0; }
-.green { color: #18a058; }
-.tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 28px; }
-.tab { padding: 8px 24px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 600; color: #909399; background: #fff; border: 1px solid #e8e8e8; transition: all 0.2s; }
-.tab:hover { color: #7c5ce7; border-color: #d4c4f0; }
-.tab.active { background: #7c5ce7; color: #fff; border-color: #7c5ce7; }
-.sec-title { font-size: 20px; margin: 0 0 16px; color: #555; }
+.hero { text-align: left; padding: 40px 20px; background: var(--color-cream-paper); border-radius: var(--radius-card); margin-bottom: 24px; border: 1px solid var(--color-pencil-gray); }
+.hero h1 { font-size: 32px; color: var(--color-forest-ink); margin: 0 0 8px; }
+.hero p { color: var(--color-whisper-gray); margin: 0; }
+.green { color: var(--color-forest-ink); font-weight: var(--weight-bold); font-family: var(--font-mono); font-feature-settings: 'tnum'; }
+.tabs { display: flex; justify-content: flex-start; gap: 12px; margin-bottom: 28px; }
+.tab { padding: 8px 24px; border-radius: var(--radius-full); cursor: pointer; font-size: 14px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); background: var(--color-cream-paper); border: 1px solid var(--color-pencil-gray); transition: all var(--transition-fast); }
+.tab:hover { border-color: var(--color-forest-ink); }
+.tab.active { background: var(--surface-highlighter); color: var(--color-forest-ink); border-color: var(--surface-highlighter); }
+.sec-title { font-size: 20px; margin: 0 0 16px; color: var(--color-forest-ink); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-.card { border-radius: 12px; transition: all 0.3s; }
-.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-.card.cat { border-top: 3px solid #18a058; }
-.card.dog { border-top: 3px solid #f0a020; }
-.card.undetected { opacity: 0.55; }
-.card.undetected:hover { opacity: 0.85; }
+
+/* 品种卡片 — PaperCard 基础上微调 */
+.breed-card {
+  transition: transform var(--transition-fast);
+}
+.breed-card:hover {
+  transform: translateY(-2px);
+}
+
+/* 未检测到的品种 — 虚线褪色 */
+.breed-card.undetected {
+  background: transparent !important;
+  border: 1.5px dashed var(--color-pencil-gray) !important;
+  border-radius: 4px 12px 12px 4px !important;
+  box-shadow: none !important;
+}
+.breed-card.undetected::before { display: none; }
+.breed-card.undetected:hover {
+  border-color: var(--color-forest-ink) !important;
+  background: rgba(26, 51, 0, 0.02) !important;
+}
+.breed-card.undetected .card-emoji { opacity: 0.35; filter: grayscale(1); }
+.breed-card.undetected h3 { color: var(--color-pencil-gray); }
+.breed-card.undetected .en-name { color: var(--color-whisper-gray); }
+.breed-card.undetected .badge-row,
+.breed-card.undetected .attr,
+.breed-card.undetected .fact { display: none; }
+
+/* 卡片内容 */
 .card-emoji { font-size: 48px; text-align: center; }
-.card h3 { text-align: center; font-size: 18px; margin: 4px 0 2px; }
-.en-name { text-align: center; font-size: 12px; color: #aaa; margin: 0; }
-.badge-row { text-align: center; margin: 6px 0; }
-.attr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; color: #555; }
-.lbl { color: #999; font-size: 13px; min-width: 32px; }
-.fact { background: #fef9f0; border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #5d4037; line-height: 1.5; }
+.breed-card h3 { text-align: center; font-size: 18px; margin: 6px 0 2px; color: var(--color-forest-ink); }
+.en-name { text-align: center; font-size: 12px; color: var(--color-pencil-gray); margin: 0 0 4px; }
+.badge-row { text-align: center; margin: 8px 0; }
+
+/* 自定义分割线 */
+.card-divider {
+  height: 1px;
+  background: var(--color-whisper-gray);
+  margin: 10px 0;
+}
+
+.attr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; color: var(--color-forest-ink); }
+.lbl { color: var(--color-whisper-gray); font-size: 13px; min-width: 36px; }
+.attr-val { font-size: 14px; color: var(--color-forest-ink); }
+.fact { background: rgba(26, 51, 0, 0.03); border-radius: 6px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--color-forest-ink); line-height: 1.5; }
 </style>

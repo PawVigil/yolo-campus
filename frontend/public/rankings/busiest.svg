@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" fill="none">
+  <!-- Campus scene - canteen/busy place -->
+  <g opacity="0.08" fill="#1a3300">
+    <!-- building -->
+    <rect x="80" y="100" width="140" height="130" rx="4"/>
+    <!-- roof -->
+    <polygon points="70,100 150,55 230,100"/>
+    <!-- windows -->
+    <rect x="100" y="120" width="25" height="20" rx="2"/>
+    <rect x="140" y="120" width="25" height="20" rx="2"/>
+    <rect x="180" y="120" width="25" height="20" rx="2"/>
+    <rect x="100" y="160" width="25" height="20" rx="2"/>
+    <rect x="140" y="160" width="25" height="20" rx="2"/>
+    <rect x="180" y="160" width="25" height="20" rx="2"/>
+    <!-- door -->
+    <rect x="130" y="195" width="40" height="35" rx="3"/>
+    <!-- chimney -->
+    <rect x="175" y="65" width="15" height="35" rx="2"/>
+  </g>
+  <!-- Heat waves -->
+  <g opacity="0.06" stroke="#e89970" stroke-width="2" fill="none">
+    <path d="M110,90 Q115,82 120,90"/>
+    <path d="M140,85 Q145,77 150,85"/>
+    <path d="M170,88 Q175,80 180,88"/>
+  </g>
+</svg>

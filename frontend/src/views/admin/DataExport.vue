@@ -167,11 +167,11 @@ function downloadFile() {
 
 <style scoped>
 .export-page { max-width: 800px; }
-.page-title { margin-bottom: 20px; font-size: 22px; }
+.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
 .type-card { margin-bottom: 16px; }
 .date-selector { margin: 16px 0; max-width: 400px; }
 .preview-card { margin-bottom: 16px; }
-.value-cell { font-weight: 700; font-size: 20px; color: #7c5ce7; }
+.value-cell { font-weight: var(--weight-bold); font-size: 20px; color: var(--color-forest-ink); }
 .export-actions { display: flex; gap: 12px; }
 .export-done { margin-top: 16px; }
 </style>

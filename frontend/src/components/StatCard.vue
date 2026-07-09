@@ -1,27 +1,30 @@
 <template>
-  <n-card :bordered="false" class="stat-card" :style="{ borderLeft: `4px solid ${color}` }">
-    <div class="stat-content">
-      <div class="stat-icon" :style="{ color }">
-        <n-icon :size="28">
-          <component :is="icon" />
-        </n-icon>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value">{{ formattedValue }}</div>
-        <div class="stat-label">{{ label }}</div>
-      </div>
+  <!-- Naked variant: bare numbers, no card wrapper -->
+  <div v-if="variant === 'naked'" class="stat-naked">
+    <div class="stat-naked-value">{{ formattedValue }}</div>
+    <div class="stat-naked-label">{{ label }}</div>
+  </div>
+
+  <!-- Sticky variant (default): pastel-filled sticky note -->
+  <StickyNote v-else :color="surfaceColor" :hoverable="true">
+    <div class="stat-sticky-icon" v-if="icon">
+      <n-icon :size="24"><component :is="icon" /></n-icon>
     </div>
-  </n-card>
+    <div class="stat-sticky-value">{{ formattedValue }}</div>
+    <div class="stat-sticky-label">{{ label }}</div>
+  </StickyNote>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import StickyNote from './StickyNote.vue'
 
 const props = defineProps({
-  icon: { type: Object, required: true },
+  icon: { type: Object, default: null },
   value: { type: [Number, String], required: true },
   label: { type: String, required: true },
-  color: { type: String, default: '#7c5ce7' },
+  color: { type: String, default: '#1a3300' },
+  variant: { type: String, default: 'sticky' },  // 'sticky' | 'naked'
 })
 
 const formattedValue = computed(() => {
@@ -30,42 +33,62 @@ const formattedValue = computed(() => {
   }
   return String(props.value)
 })
+
+const surfaceColor = computed(() => {
+  const map = {
+    '#7c5ce7': 'var(--surface-mint)',
+    '#18a058': 'var(--surface-teal)',
+    '#f0a020': 'var(--surface-highlighter)',
+    '#2080f0': 'var(--surface-blush)',
+    '#1a3300': 'var(--surface-mint)',
+  }
+  return map[props.color] || 'var(--surface-cream)'
+})
 </script>
 
 <style scoped>
-.stat-card {
-  transition: transform 0.2s;
+/* ===== Naked variant ===== */
+.stat-naked {
+  text-align: center;
 }
-.stat-card:hover {
-  transform: translateY(-2px);
+
+.stat-naked-value {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  color: var(--color-forest-ink);
+  font-feature-settings: 'tnum';
 }
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+
+.stat-naked-label {
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-body-sm);
+  color: var(--color-whisper-gray);
+  margin-top: 4px;
 }
-.stat-icon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: currentColor;
-  color: #fff !important;
+
+/* ===== Sticky variant (StickyNote handles the card) ===== */
+.stat-sticky-icon {
+  margin-bottom: 8px;
+  color: var(--color-forest-ink);
+  text-align: center;
 }
-.stat-icon :deep(.n-icon) {
-  color: #fff;
+.stat-sticky-value {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-size: 32px;
+  color: var(--color-forest-ink);
+  text-align: center;
+  font-feature-settings: 'tnum';
 }
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.stat-label {
-  font-size: 14px;
-  color: #909399;
-  margin-top: 2px;
+.stat-sticky-label {
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body-sm);
+  color: var(--color-forest-ink);
+  text-align: center;
+  margin-top: 4px;
 }
 </style>

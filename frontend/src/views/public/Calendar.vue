@@ -12,7 +12,7 @@
         <h2 class="month-title">{{ viewYear }}年{{ viewMonth }}月</h2>
       </div>
 
-      <n-card :bordered="false">
+      <div class="notebook-card">
         <div class="weekday-row">
           <div v-for="d in weekDays" :key="d" class="weekday-cell">{{ d }}</div>
         </div>
@@ -25,25 +25,26 @@
               'is-today': day.isToday,
               'has-animals': day.hasAnimals,
               'is-future': day.isFuture,
+              'is-dimmed': !day.inMonth,
             }"
             @click="day.hasAnimals && !day.isFuture && openDetail(day)"
           >
             <div class="day-num">{{ day.dayNum }}</div>
-            <div v-if="day.hasAnimals && !day.isFuture" class="day-icons">
-              <span v-if="day.hasCat" class="day-icon">🐱</span>
-              <span v-if="day.hasDog" class="day-icon">🐕</span>
+            <div v-if="day.hasAnimals && !day.isFuture" class="day-stamps">
+              <span v-if="day.hasCat" class="stamp stamp-cat" title="有猫">●</span>
+              <span v-if="day.hasDog" class="stamp stamp-dog" title="有狗">●</span>
             </div>
           </div>
         </div>
-      </n-card>
+      </div>
     </n-layout-content>
 
     <!-- 日详情弹窗 -->
-    <n-modal v-model:show="showDetail" preset="card" :title="'📅 ' + selectedDate" style="max-width: 560px" :mask-closable="true">
+    <n-modal v-model:show="showDetail" preset="card" :title="selectedDate" style="max-width: 560px" :mask-closable="true">
       <n-spin :show="detailLoading">
-        <n-empty v-if="!detailLoading && detailLocations.length === 0" description="当天无检测记录" />
+        <n-empty v-if="!detailLoading && detailLocations.length === 0" description="这天还没有检测记录 — 不妨去食堂或花园附近看看" :show-icon="false" />
         <div v-else class="detail-list">
-          <n-card v-for="loc in detailLocations" :key="loc.name" :bordered="false" size="small" class="detail-card">
+          <PaperCard v-for="loc in detailLocations" :key="loc.name" stripe="ink" padding="sm" class="detail-card">
             <div class="detail-loc">
               <span class="loc-emoji">{{ loc.emoji }}</span>
               <strong>{{ loc.name }}</strong>
@@ -51,7 +52,7 @@
             <div class="detail-breeds">
               <n-tag v-for="b in loc.breeds" :key="b" size="small" round>{{ b }}</n-tag>
             </div>
-          </n-card>
+          </PaperCard>
         </div>
       </n-spin>
     </n-modal>
@@ -62,6 +63,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PublicNav from '@/components/PublicNav.vue'
+import PaperCard from '@/components/PaperCard.vue'
 import { getCalendar, getPublicDetections } from '@/api/public.js'
 
 const router = useRouter()
@@ -174,29 +176,123 @@ onMounted(() => fetchCalendar())
 </script>
 
 <style scoped>
-.calendar-page { min-height: 100vh; background: #f5f7fa; }
-.public-nav { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-.nav-content { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; padding: 0 20px; height: 56px; }
-.nav-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 24px; }
-.brand-icon { font-size: 24px; }
-.brand-text { font-size: 18px; font-weight: 700; color: #7c5ce7; }
-.admin-link { margin-left: auto; }
-.cal-content { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
+.calendar-page { min-height: 100vh; background: var(--color-cream-paper); }
+.cal-content { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
 .month-header { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
-.month-title { margin: 0; font-size: 22px; }
-.weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: #909399; margin-bottom: 8px; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.cal-cell { min-height: 80px; padding: 8px; background: #fff; border-radius: 8px; cursor: default; transition: all 0.2s; }
-.cal-cell.has-animals { cursor: pointer; }
-.cal-cell.has-animals:hover { background: #f0ebff; transform: scale(1.02); }
-.cal-cell.is-today { border: 2px solid #7c5ce7; }
-.cal-cell.is-future { background: #f9f9fb; color: #ccc; }
-.day-num { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-.day-icons { display: flex; justify-content: center; gap: 4px; margin-top: 6px; }
-.day-icon { font-size: 20px; line-height: 1; }
+.month-title { margin: 0; font-size: 22px; color: var(--color-forest-ink); }
 
+/* ================================
+   Notebook Card — field journal
+   ================================ */
+.notebook-card {
+  background-color: #fdfcfa;
+  background-image:
+    /* horizontal ruled lines */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(182, 182, 182, 0.18) 39px,
+      rgba(182, 182, 182, 0.18) 40px
+    ),
+    /* left margin line (red, faint) */
+    linear-gradient(90deg, rgba(200, 80, 60, 0.12) 0px, rgba(200, 80, 60, 0.12) 1px, transparent 1px);
+  border: 1px solid var(--color-pencil-gray);
+  border-radius: 2px;
+  padding: 28px 28px 28px 36px;
+  box-shadow:
+    2px 2px 0 rgba(0,0,0,0.04),
+    0 1px 4px rgba(0,0,0,0.06);
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: var(--weight-semibold);
+  font-size: 13px;
+  color: var(--color-whisper-gray);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-cell {
+  min-height: 78px;
+  padding: 6px 6px 8px;
+  cursor: default;
+  transition: all var(--transition-fast);
+  position: relative;
+  border-radius: 2px;
+}
+
+.cal-cell.has-animals { cursor: pointer; }
+.cal-cell.has-animals:hover { background: rgba(26, 51, 0, 0.04); }
+
+.cal-cell.is-dimmed .day-num { color: var(--color-whisper-gray); }
+
+/* Today — highlighter yellow swipe */
+.cal-cell.is-today {
+  background: var(--color-highlighter-yellow);
+  box-shadow: inset 0 0 0 1px rgba(26,51,0,0.1);
+}
+.cal-cell.is-today .day-num {
+  font-weight: var(--weight-extrabold);
+  font-size: 16px;
+}
+
+.cal-cell.is-future { opacity: 0.35; pointer-events: none; }
+
+.day-num {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+  font-size: 13px;
+  color: var(--color-forest-ink);
+  margin-bottom: 2px;
+  font-feature-settings: 'tnum';
+}
+
+/* Ink stamps — circular, slightly irregular */
+.day-stamps {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.82;
+  transform: rotate(-5deg);
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.15);
+}
+.stamp-cat {
+  background: rgba(26, 51, 0, 0.12);
+  color: var(--color-forest-ink);
+}
+.stamp-dog {
+  background: rgba(232, 153, 112, 0.2);
+  color: var(--color-terracotta);
+}
+.cal-cell:nth-child(7n+2) .stamp { transform: rotate(3deg); }
+.cal-cell:nth-child(7n+5) .stamp { transform: rotate(-7deg); }
+.cal-cell:nth-child(3n+1) .stamp { transform: rotate(6deg); }
+
+/* Detail modal */
 .detail-list { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-.detail-card { border-left: 3px solid #7c5ce7; }
+.detail-card { margin-bottom: 2px; }
 .detail-loc { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .loc-emoji { font-size: 20px; }
 .detail-breeds { display: flex; gap: 4px; flex-wrap: wrap; }

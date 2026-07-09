@@ -65,18 +65,20 @@ function openCard() {
   width: 100%;
 }
 .card-body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  padding: 30px;
-  border-radius: 16px;
+  background: var(--color-cream-paper);
+  color: var(--color-forest-ink);
+  border: 1px solid var(--color-pencil-gray);
+  border-radius: var(--radius-card);
+  padding: 32px;
   text-align: center;
 }
 .card-emoji {
   font-size: 64px;
 }
 .card-breed {
+  font-family: var(--font-body);
   font-size: 24px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
   margin-top: 8px;
 }
 .card-info {
@@ -86,21 +88,20 @@ function openCard() {
 }
 .info-label {
   font-size: 12px;
-  opacity: 0.7;
+  color: var(--color-whisper-gray);
 }
 .info-value {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: var(--weight-bold);
 }
 .card-fun-fact {
   font-size: 14px;
-  opacity: 0.9;
-  margin-top: 15px;
   line-height: 1.5;
+  margin-top: 15px;
 }
 .card-footer {
   margin-top: 20px;
   font-size: 12px;
-  opacity: 0.6;
+  color: var(--color-whisper-gray);
 }
 </style>

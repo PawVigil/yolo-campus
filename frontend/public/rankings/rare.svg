@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" fill="none">
+  <!-- Lone wolf/dog silhouette - rare breed -->
+  <g opacity="0.1" fill="#1a3300">
+    <!-- body -->
+    <ellipse cx="160" cy="185" rx="55" ry="35"/>
+    <!-- head -->
+    <circle cx="120" cy="150" r="25"/>
+    <!-- snout -->
+    <ellipse cx="100" cy="158" rx="15" ry="10"/>
+    <!-- ears -->
+    <polygon points="108,130 100,108 118,125"/>
+    <polygon points="132,128 138,105 125,122"/>
+    <!-- legs -->
+    <rect x="125" y="210" width="10" height="35" rx="5"/>
+    <rect x="145" y="210" width="10" height="35" rx="5"/>
+    <rect x="170" y="210" width="10" height="30" rx="5"/>
+    <rect x="188" y="210" width="10" height="30" rx="5"/>
+    <!-- tail up -->
+    <path d="M215,175 Q230,155 225,135 Q222,128 218,135 Q220,150 210,168" stroke-width="6" stroke="#1a3300" fill="none" opacity="0.1"/>
+    <!-- eye -->
+    <circle cx="112" cy="148" r="3" fill="#1a3300" opacity="0.15"/>
+  </g>
+  <!-- Sparkle accents (rare) -->
+  <g opacity="0.08" fill="#f6d0ff">
+    <circle cx="60" cy="80" r="3"/>
+    <circle cx="240" cy="90" r="2"/>
+    <circle cx="250" cy="120" r="2.5"/>
+    <circle cx="50" cy="130" r="2"/>
+  </g>
+</svg>
