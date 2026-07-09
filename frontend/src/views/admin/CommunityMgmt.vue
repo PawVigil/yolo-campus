@@ -1,46 +1,50 @@
 <template>
   <div class="community-mgmt-page">
-    <h2 class="page-title">📸 社区分享管理</h2>
+    <h2 class="page-title">社区分享管理</h2>
     <p class="page-subtitle">管理所有用户的社区分享内容</p>
 
-      <!-- 日期筛选 + 上传 -->
-      <div class="top-bar">
-        <n-date-picker v-model:value="filterDate" type="date" placeholder="选择日期筛选" clearable @update:value="onDateFilter" />
-        <n-button type="primary" @click="showUpload = true">📤 上传分享</n-button>
-      </div>
+      <!-- 非对称分栏：左侧筛选 + 右侧照片墙 -->
+      <div class="community-layout">
+        <aside class="community-sidebar">
+          <n-date-picker v-model:value="filterDate" type="date" placeholder="选择日期筛选" clearable @update:value="onDateFilter" />
+          <n-button type="primary" block @click="showUpload = true">上传分享</n-button>
+        </aside>
 
-      <!-- 分享卡片列表 -->
-      <n-spin :show="loading">
-        <div v-if="!loading && items.length === 0" class="empty-state">
-          <div class="empty-illustration">🐾</div>
-          <p class="empty-title">今天还没有人分享</p>
-          <p class="empty-hint">暂无社区分享内容需要管理</p>
-        </div>
-        <div v-else class="community-grid">
-          <n-card v-for="item in items" :key="item.id" :bordered="false" class="community-card" @click="openDetail(item)">
-            <n-button text class="delete-share-btn" @click.stop="doDeleteShare(item.id)" title="删除此分享">
-              <span style="color: #d03050; font-size: 18px;">🗑️</span>
-            </n-button>
-            <img :src="item.images[0]" class="cover-image" height="300" />
-            <div class="card-info">
-              <div class="card-top-row">
-                <LocationBadge v-if="item.location_name" :name="item.location_name" />
-                <n-tag v-if="item.breed" type="info" size="small" round>{{ item.breed }}</n-tag>
-                <span class="photo-count">{{ item.images.length }} 张</span>
-              </div>
-              <p v-if="item.description" class="card-desc">{{ item.description }}</p>
-              <div class="card-bottom">
-                <span v-if="item.nickname" class="card-nickname">{{ item.nickname }}</span>
-                <span class="card-time">{{ fmtTime(item.created_at) }}</span>
-                <span class="card-comments">💬 {{ item.comments?.length || 0 }}</span>
+        <!-- 分享卡片列表 -->
+        <div class="community-main">
+          <n-spin :show="loading">
+            <div v-if="!loading && items.length === 0" class="empty-state">
+              <div class="empty-illustration">—</div>
+              <p class="empty-title">暂无分享内容</p>
+              <p class="empty-hint">用户上传的分享会显示在这里，届时可进行审核管理</p>
+            </div>
+            <div v-else class="community-grid">
+              <div v-for="item in items" :key="item.id" class="community-card" @click="openDetail(item)">
+                <n-button text class="delete-share-btn" @click.stop="doDeleteShare(item.id)" title="删除此分享">
+                  <span style="color: #d03050; font-size: 18px;">×</span>
+                </n-button>
+                <img :src="item.images[0]" class="cover-image" height="300" />
+                <div class="card-info">
+                  <div class="card-top-row">
+                    <LocationBadge v-if="item.location_name" :name="item.location_name" />
+                    <n-tag v-if="item.breed" type="info" size="small" round>{{ item.breed }}</n-tag>
+                    <span class="photo-count">{{ item.images.length }} 张</span>
+                  </div>
+                  <p v-if="item.description" class="card-desc">{{ item.description }}</p>
+                  <div class="card-bottom">
+                    <span v-if="item.nickname" class="card-nickname">{{ item.nickname }}</span>
+                    <span class="card-time">{{ fmtTime(item.created_at) }}</span>
+                    <span class="card-comments">{{ item.comments?.length || 0 }} 条评论</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </n-card>
+          </n-spin>
         </div>
-      </n-spin>
+      </div>
 
     <!-- 详情弹窗：多图+评论 -->
-    <n-modal v-model:show="showDetail" preset="card" title="📸 分享详情" style="max-width: 680px" :mask-closable="true">
+    <n-modal v-model:show="showDetail" preset="card" title="分享详情" style="max-width: 680px" :mask-closable="true">
       <template v-if="detailItem">
         <!-- 图片轮播 -->
         <div class="gallery">
@@ -60,14 +64,14 @@
 
         <!-- 评论区 -->
         <div class="comments-section">
-          <h4>💬 评论（{{ detailItem.comments?.length || 0 }}）</h4>
+          <h4>评论（{{ detailItem.comments?.length || 0 }}）</h4>
           <div v-if="!detailItem.comments?.length" class="no-comments">暂无评论</div>
           <div v-for="c in detailItem.comments" :key="c.id" class="comment-item">
             <span class="comment-nick">{{ c.nickname || '匿名' }}</span>
             <span class="comment-text">{{ c.text }}</span>
             <span class="comment-time">{{ fmtTime(c.time) }}</span>
             <n-button text class="delete-comment-btn" @click="doDeleteComment(c.id)" title="删除此评论">
-              <span style="color: #d03050;">🗑️</span>
+              <span style="color: #d03050;">×</span>
             </n-button>
           </div>
           <div class="comment-input">
@@ -80,7 +84,7 @@
     </n-modal>
 
     <!-- 上传弹窗 -->
-    <n-modal v-model:show="showUpload" preset="card" :title="shareImage ? '📸 从检测记录分享' : '📤 分享你的发现'" style="max-width: 560px" :mask-closable="true" @update:show="(v) => { if (!v) { shareImage = ''; shareLocation = ''; uploadFiles.value = []; } }">
+    <n-modal v-model:show="showUpload" preset="card" :title="shareImage ? '从检测记录分享' : '分享你的发现'" style="max-width: 560px" :mask-closable="true" @update:show="(v) => { if (!v) { shareImage = ''; shareLocation = ''; uploadFiles.value = []; } }">
       <n-form label-placement="top">
         <n-form-item v-if="!shareImage" label="选择照片（可多张）">
           <n-upload multiple accept="image/jpeg,image/png" :max="9" @change="onFilesChange">
@@ -267,15 +271,49 @@ onMounted(async () => {
 
 <style scoped>
 .community-mgmt-page { max-width: 1100px; }
-.page-title { text-align: center; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
-.page-subtitle { text-align: center; color: var(--color-whisper-gray); margin-bottom: 20px; }
-.top-bar { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; align-items: center; }
+.page-title { text-align: left; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
+.page-subtitle { text-align: left; color: var(--color-whisper-gray); margin-bottom: 20px; }
+/* Asymmetric split: left sidebar + right photo wall */
+.community-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.community-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.community-main {
+  flex: 1;
+  min-width: 0;
+}
 .empty-state { margin-top: 80px; text-align: center; }
 .empty-illustration { font-size: 64px; opacity: 0.5; margin-bottom: 16px; }
 .empty-title { font-family: var(--font-body); font-size: 18px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); margin: 0 0 8px; }
 .empty-hint { font-family: var(--font-body); font-size: 14px; color: var(--color-whisper-gray); margin: 0; }
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.community-card { cursor: pointer; transition: transform var(--transition-fast); position: relative; }
+.community-card { cursor: pointer; transition: transform var(--transition-fast); position: relative; animation: card-rise 0.5s ease both; }
+.community-card:nth-child(1) { animation-delay: 0.04s; }
+.community-card:nth-child(2) { animation-delay: 0.08s; }
+.community-card:nth-child(3) { animation-delay: 0.12s; }
+.community-card:nth-child(4) { animation-delay: 0.16s; }
+.community-card:nth-child(5) { animation-delay: 0.20s; }
+.community-card:nth-child(6) { animation-delay: 0.24s; }
+.community-card:nth-child(7) { animation-delay: 0.28s; }
+.community-card:nth-child(8) { animation-delay: 0.32s; }
+.community-card:nth-child(9) { animation-delay: 0.36s; }
+.community-card:nth-child(10) { animation-delay: 0.40s; }
+.community-card:nth-child(11) { animation-delay: 0.44s; }
+.community-card:nth-child(12) { animation-delay: 0.48s; }
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .community-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-subtle-2); }
 .delete-share-btn { position: absolute; top: 8px; right: 8px; z-index: 10; opacity: 0.6; }
 .delete-share-btn:hover { opacity: 1; }

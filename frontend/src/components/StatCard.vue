@@ -53,8 +53,8 @@ const surfaceColor = computed(() => {
 }
 
 .stat-naked-value {
-  font-family: var(--font-body);
-  font-weight: var(--weight-extrabold);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
   font-size: var(--text-display);
   line-height: var(--leading-display);
   color: var(--color-forest-ink);
@@ -76,7 +76,7 @@ const surfaceColor = computed(() => {
   text-align: center;
 }
 .stat-sticky-value {
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-weight: var(--weight-bold);
   font-size: 32px;
   color: var(--color-forest-ink);

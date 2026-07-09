@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" fill="none">
+  <!-- Cat silhouette - most seen champion -->
+  <g opacity="0.12" fill="#1a3300">
+    <!-- body -->
+    <ellipse cx="150" cy="180" rx="65" ry="45"/>
+    <!-- head -->
+    <circle cx="150" cy="110" r="38"/>
+    <!-- ears -->
+    <polygon points="122,82 112,50 138,75"/>
+    <polygon points="178,82 188,50 162,75"/>
+    <!-- tail -->
+    <path d="M215,175 Q240,140 225,110 Q220,100 215,110 Q225,135 205,165" stroke-width="8" stroke="#1a3300" fill="none" opacity="0.12"/>
+    <!-- eyes -->
+    <ellipse cx="137" cy="105" rx="5" ry="7"/>
+    <ellipse cx="163" cy="105" rx="5" ry="7"/>
+    <!-- nose -->
+    <polygon points="150,118 146,124 154,124"/>
+    <!-- whiskers -->
+    <line x1="130" y1="120" x2="100" y2="115" stroke="#1a3300" stroke-width="1.5" opacity="0.1"/>
+    <line x1="130" y1="125" x2="98" y2="128" stroke="#1a3300" stroke-width="1.5" opacity="0.1"/>
+    <line x1="170" y1="120" x2="200" y2="115" stroke="#1a3300" stroke-width="1.5" opacity="0.1"/>
+    <line x1="170" y1="125" x2="202" y2="128" stroke="#1a3300" stroke-width="1.5" opacity="0.1"/>
+  </g>
+  <!-- Crown accent -->
+  <g opacity="0.08" fill="#ffe95c">
+    <polygon points="150,30 138,55 145,48 150,58 155,48 162,55"/>
+  </g>
+</svg>

@@ -5,13 +5,13 @@
 
     <n-layout-content class="guide-content">
       <n-spin :show="loading">
-        <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
+        <n-empty v-if="!loading && error" description="数据加载失败 — 请检查网络连接后刷新页面" class="error-state" :show-icon="false" />
         <template v-else-if="!loading && data">
-          <h2 class="page-title">🐱 观测指南</h2>
+          <h2 class="page-title">观测指南</h2>
           <p class="page-subtitle">基于各地点真实出没数据，帮你找到最佳观测时机</p>
 
           <div class="guide-cards">
-            <n-card v-for="loc in data.locations" :key="loc.name" :bordered="false" class="guide-card" :style="{ background: locBgColors[loc.name] || 'var(--surface-cream)' }">
+            <div v-for="loc in data.locations" :key="loc.name" class="guide-card" :style="{ background: locBgColors[loc.name] || 'var(--surface-cream)' }">
               <div class="card-top">
                 <div class="card-emoji">{{ loc.emoji }}</div>
                 <div class="card-header">
@@ -21,46 +21,41 @@
                     <span class="rating-text">{{ ratingLabel(loc.rating) }}</span>
                   </div>
                 </div>
-                <n-tag :type="rateColor(loc.appearance_rate)" round>
+                <InkTag variant="ink">
                   出没率 {{ (loc.appearance_rate * 100).toFixed(0) }}%
-                </n-tag>
+                </InkTag>
               </div>
 
-              <n-divider />
+              <div class="card-divider"></div>
 
-              <n-grid :cols="3" :x-gap="16" responsive="screen">
-                <n-grid-item>
-                  <div class="info-block">
-                    <div class="info-label">🏠 主要住户</div>
-                    <div class="info-value">
-                      <n-tag v-for="b in loc.main_breeds" :key="b.breed_cn" size="small" round class="breed-tag">
-                        {{ b.breed_cn }} ({{ b.count }})
-                      </n-tag>
-                      <n-empty v-if="!loc.main_breeds.length" description="暂无数据" size="small" />
-                    </div>
+              <div class="card-details">
+                <div class="detail-breeds">
+                  <div class="info-label">主要住户</div>
+                  <div class="info-value">
+                    <InkTag v-for="b in loc.main_breeds" :key="b.breed_cn" variant="mint" class="breed-tag">
+                      {{ b.breed_cn }} ({{ b.count }})
+                    </InkTag>
+                    <n-empty v-if="!loc.main_breeds.length" description="暂无品种记录 — 多去逛逛，也许能发现新朋友" size="small" :show-icon="false" />
                   </div>
-                </n-grid-item>
-                <n-grid-item>
+                </div>
+                <div class="detail-meta">
                   <div class="info-block">
                     <div class="info-label">⏰ 最佳时段</div>
                     <div class="info-value time-range">{{ loc.best_time?.start || '--' }} - {{ loc.best_time?.end || '--' }}</div>
                   </div>
-                </n-grid-item>
-                <n-grid-item>
                   <div class="info-block">
-                    <div class="info-label">📝 出现规律</div>
+                    <div class="info-label">出现规律</div>
                     <div class="info-value pattern-desc">{{ loc.pattern_desc }}</div>
                   </div>
-                </n-grid-item>
-              </n-grid>
+                </div>
+              </div>
 
-              <n-divider />
+              <div class="card-divider"></div>
 
               <div class="tip-block">
-                <span class="tip-icon">💡</span>
                 <span class="tip-text">{{ loc.tip }}</span>
               </div>
-            </n-card>
+            </div>
           </div>
         </template>
       </n-spin>
@@ -72,6 +67,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PublicNav from '@/components/PublicNav.vue'
+import InkTag from '@/components/InkTag.vue'
 import { getGuide } from '@/api/public.js'
 
 const router = useRouter()
@@ -117,25 +113,82 @@ onMounted(async () => {
 <style scoped>
 .guide-page { min-height: 100vh; background: var(--color-cream-paper); }
 .guide-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
-.page-title { text-align: center; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
-.page-subtitle { text-align: center; color: var(--color-whisper-gray); margin-bottom: 32px; }
-.guide-cards { display: flex; flex-direction: column; gap: 20px; }
-.guide-card { transition: transform var(--transition-fast); border-radius: var(--radius-card); }
-.guide-card:hover { transform: translateY(-2px); }
+.page-title { text-align: left; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
+.page-subtitle { text-align: left; color: var(--color-whisper-gray); margin-bottom: 32px; }
+.guide-cards { display: flex; flex-direction: column; gap: 24px; }
+.guide-card {
+  position: relative;
+  padding: 20px 24px 24px;
+  border-radius: 6px 14px 14px 6px;
+  box-shadow:
+    2px 2px 0 rgba(26, 51, 0, 0.04),
+    0 1px 4px rgba(26, 51, 0, 0.05);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  max-width: 95%;
+}
+.guide-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+  background: var(--color-forest-ink);
+  opacity: 0.3;
+}
+/* Zig-zag: even cards shifted right + reversed */
+.guide-card:nth-child(even) {
+  margin-left: auto;
+}
+.guide-card:nth-child(even) .card-top {
+  flex-direction: row-reverse;
+}
+.guide-card:nth-child(even) .card-details {
+  flex-direction: row-reverse;
+}
+.guide-card:hover { transform: translateY(-2px); box-shadow: 3px 3px 0 rgba(26,51,0,0.06), 0 4px 12px rgba(26,51,0,0.08); }
+
+.card-divider { height: 1px; background: rgba(26,51,0,0.1); margin: 14px 0; }
+
 .card-top { display: flex; align-items: center; gap: 16px; }
-.card-emoji { font-size: 40px; }
+.card-emoji { font-size: 40px; flex-shrink: 0; }
 .card-header { flex: 1; }
 .card-name { margin: 0 0 4px; font-size: 20px; color: var(--color-forest-ink); }
 .star { color: var(--color-pencil-gray); font-size: 18px; }
 .star.active { color: var(--color-forest-ink); }
 .rating-text { font-size: 13px; color: var(--color-whisper-gray); margin-left: 8px; }
-.info-block { padding: 8px 0; }
+
+/* Card details — breeds wider, meta narrower (break 3-equal) */
+.card-details {
+  display: flex;
+  gap: 20px;
+}
+.detail-breeds {
+  flex: 1.5;
+}
+.detail-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-block { padding: 4px 0; }
 .info-label { font-size: 14px; font-weight: var(--weight-semibold); margin-bottom: 8px; color: var(--color-forest-ink); }
 .info-value { display: flex; gap: 4px; flex-wrap: wrap; }
-.time-range { font-size: 20px; font-weight: var(--weight-bold); color: var(--color-forest-ink); }
+.time-range { font-family: var(--font-mono); font-size: 20px; font-weight: var(--weight-bold); color: var(--color-forest-ink); font-feature-settings: 'tnum'; }
 .pattern-desc { font-size: 14px; color: var(--color-forest-ink); line-height: 1.6; }
 .breed-tag { margin: 2px; }
 .tip-block { background: var(--surface-highlighter); border-radius: var(--radius-card); padding: 12px 16px; display: flex; align-items: flex-start; gap: 8px; }
 .tip-icon { flex-shrink: 0; font-size: 16px; }
 .tip-text { font-size: 14px; color: var(--color-forest-ink); line-height: 1.6; }
+
+@media (max-width: 768px) {
+  .guide-card { max-width: 100%; }
+  .guide-card:nth-child(even) { margin-left: 0; }
+  .guide-card:nth-child(even) .card-top,
+  .guide-card:nth-child(even) .card-details { flex-direction: row; }
+  .card-details { flex-direction: column; }
+}
 </style>

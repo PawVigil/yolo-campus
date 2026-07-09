@@ -2,7 +2,7 @@
   <div class="nav-wrapper">
     <div class="nav-pill">
       <div class="nav-brand" @click="$router.push('/')">
-        <span class="brand-mark">🐾</span>
+        <span class="brand-mark">PV</span>
         <span class="brand-text">PawVigil</span>
       </div>
       <n-menu
