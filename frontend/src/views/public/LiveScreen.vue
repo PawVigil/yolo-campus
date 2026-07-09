@@ -9,9 +9,13 @@
           <!-- Hero 区域 — 墨印头条 -->
           <div class="hero-section">
             <div class="hero-bg-number" aria-hidden="true">{{ data.stats.total_detections }}</div>
+            <img src="/paw-prints.svg" alt="" class="hero-paws" aria-hidden="true" />
             <div class="hero-top">
               <div class="hero-title-col">
-                <h1 class="hero-title">校园动物实时观测</h1>
+                <h1 class="hero-title">
+                  <span class="hero-title-line1">校园动物</span>
+                  <span class="hero-title-line2">实时观测</span>
+                </h1>
                 <p class="hero-subtitle">YOLOv8 智能检测 · 覆盖 {{ data.stats.locations_covered }} 个校园地点 · 近 14 天数据</p>
               </div>
               <div class="hero-stat-primary">
@@ -201,14 +205,32 @@ onUnmounted(() => {
 .hero-title-col {
   flex: 1;
 }
+/* 爪印装饰 */
+.hero-paws {
+  position: absolute;
+  right: 20px;
+  bottom: 10px;
+  width: 260px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-title {
   font-family: var(--font-body);
-  font-weight: var(--weight-semibold);
-  font-size: 36px;
-  line-height: 1.15;
+  font-weight: var(--weight-extrabold);
+  font-size: 52px;
+  line-height: 1.08;
   color: var(--color-forest-ink);
-  margin: 0 0 8px;
-  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+  letter-spacing: -0.03em;
+}
+.hero-title-line1,
+.hero-title-line2 {
+  display: block;
+}
+.hero-title-line2 {
+  color: var(--color-terracotta);
 }
 .hero-subtitle {
   font-family: var(--font-body);
@@ -418,6 +440,13 @@ onUnmounted(() => {
     font-size: 200px;
     right: -20px;
     top: -10px;
+  }
+  .hero-paws {
+    width: 160px;
+    right: 10px;
+  }
+  .hero-title {
+    font-size: 36px;
   }
   .hero-stat-number {
     font-size: 120px;
