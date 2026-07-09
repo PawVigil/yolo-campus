@@ -17,11 +17,24 @@ const props = defineProps({
 
 const chartRef = ref(null)
 let chart = null
+let observer = null
+let animated = false
 
 function initChart() {
   if (!chartRef.value) return
-  chart = echarts.init(chartRef.value)
-  updateChart()
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect()
+        observer = null
+        chart = echarts.init(chartRef.value)
+        updateChart()
+        animated = true
+      }
+    },
+    { threshold: 0.6 }
+  )
+  observer.observe(chartRef.value)
 }
 
 function updateChart() {
@@ -53,21 +66,54 @@ function updateChart() {
       splitLine: { lineStyle: { color: '#e8e0d5', type: 'dashed' } },
       axisLabel: { fontSize: 11, color: '#b6b6b6' },
     },
+    animationDuration: animated ? 400 : 3000,
+    animationEasing: 'cubicOut',
     series: [
+      // 面积填充层
       {
         type: 'line',
         data: yData,
         smooth: true,
-        lineStyle: { color: props.color, width: 2 },
-        itemStyle: { color: props.color },
+        lineStyle: { width: 0 },
+        itemStyle: { color: 'transparent' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: 'rgba(26, 51, 0, 0.25)' },
             { offset: 1, color: 'rgba(26, 51, 0, 0.02)' },
           ]),
         },
+        symbol: 'none',
+        silent: true,
+        animationDuration: animated ? 400 : 2000,
+        animationEasing: 'cubicOut',
+        z: 0,
+      },
+      // 线条 + 数据点（逐点绘制）
+      {
+        type: 'line',
+        data: yData,
+        smooth: true,
+        lineStyle: { color: props.color, width: 2 },
+        itemStyle: { color: props.color },
         symbol: 'circle',
         symbolSize: 6,
+        animationDuration: animated ? 400 : 3000,
+        animationEasing: 'cubicOut',
+        animationDelay: animated ? 0 : function (idx) {
+          // 前几个点慢，后面匀速
+          var total = 14
+          var slowPart = Math.min(idx, 4) * 280   // 前4个点，每个280ms
+          var fastPart = Math.max(0, idx - 4) * 100  // 后面匀速100ms
+          return slowPart + fastPart
+        },
+        markPoint: {
+          data: [
+            { type: 'max', name: '最高', symbolSize: 36, label: { fontSize: 11, color: '#1a3300', formatter: '{c}', offset: [0, -8] } },
+          ],
+          itemStyle: { color: 'rgba(26, 51, 0, 0.08)', borderColor: '#1a3300', borderWidth: 1.5 },
+          animationDuration: animated ? 400 : 800,
+          animationDelay: animated ? 0 : 3000,
+        },
       },
     ],
   })
@@ -82,6 +128,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  observer?.disconnect()
   chart?.dispose()
 })
 
