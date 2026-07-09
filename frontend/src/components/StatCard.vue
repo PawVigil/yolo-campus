@@ -5,18 +5,19 @@
     <div class="stat-naked-label">{{ label }}</div>
   </div>
 
-  <!-- Sticky variant (default): pastel-filled card -->
-  <div v-else class="stat-sticky" :style="{ background: surfaceColor }">
+  <!-- Sticky variant (default): pastel-filled sticky note -->
+  <StickyNote v-else :color="surfaceColor" :hoverable="true">
     <div class="stat-sticky-icon" v-if="icon">
       <n-icon :size="24"><component :is="icon" /></n-icon>
     </div>
     <div class="stat-sticky-value">{{ formattedValue }}</div>
     <div class="stat-sticky-label">{{ label }}</div>
-  </div>
+  </StickyNote>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import StickyNote from './StickyNote.vue'
 
 const props = defineProps({
   icon: { type: Object, default: null },
@@ -68,37 +69,26 @@ const surfaceColor = computed(() => {
   margin-top: 4px;
 }
 
-/* ===== Sticky variant ===== */
-.stat-sticky {
-  border-radius: var(--radius-card);
-  padding: var(--card-padding);
-  text-align: center;
-  transition: transform var(--transition-fast);
-}
-
-.stat-sticky:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-subtle-2);
-}
-
+/* ===== Sticky variant (StickyNote handles the card) ===== */
 .stat-sticky-icon {
   margin-bottom: 8px;
   color: var(--color-forest-ink);
+  text-align: center;
 }
-
 .stat-sticky-value {
   font-family: var(--font-body);
   font-weight: var(--weight-bold);
   font-size: 32px;
   color: var(--color-forest-ink);
+  text-align: center;
   font-feature-settings: 'tnum';
 }
-
 .stat-sticky-label {
   font-family: var(--font-body);
   font-weight: var(--weight-medium);
   font-size: var(--text-body-sm);
   color: var(--color-forest-ink);
+  text-align: center;
   margin-top: 4px;
 }
 </style>

@@ -218,9 +218,12 @@ onMounted(async () => {
 .empty-title { font-family: var(--font-body); font-size: 18px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); margin: 0 0 8px; }
 .empty-hint { font-family: var(--font-body); font-size: 14px; color: var(--color-whisper-gray); margin: 0; }
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.community-card { cursor: pointer; transition: transform var(--transition-fast); position: relative; }
-.community-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-subtle-2); }
-.cover-image { width: 100%; height: 300px; object-fit: cover; border-radius: var(--radius-image); display: block; border: 1px solid var(--color-pencil-gray); }
+.community-card { cursor: pointer; position: relative; background: var(--color-cream-paper); border-radius: 6px; padding: 8px; box-shadow: 1px 1px 3px rgba(0,0,0,0.08); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.community-card:nth-child(3n+1) { transform: rotate(-0.3deg); }
+.community-card:nth-child(3n+2) { transform: rotate(0.2deg); }
+.community-card:nth-child(3n+3) { transform: rotate(-0.2deg); }
+.community-card:hover { transform: rotate(0deg) translateY(-3px) !important; box-shadow: 3px 3px 8px rgba(0,0,0,0.12); }
+.cover-image { width: 100%; height: 280px; object-fit: cover; border-radius: 3px; display: block; }
 .photo-count { color: var(--color-forest-ink); font-size: 12px; font-weight: 600; margin-left: auto; }
 .card-info { padding-top: 12px; }
 .card-top-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }

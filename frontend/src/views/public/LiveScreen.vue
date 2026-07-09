@@ -27,11 +27,11 @@
           <!-- 地点状态卡片 — pastel 满铺背景 -->
           <h3 class="section-title">各地点实时状态</h3>
           <div class="location-cards">
-            <div
-              v-for="loc in data.location_status"
+            <StickyNote
+              v-for="(loc, i) in data.location_status"
               :key="loc.id"
-              class="location-card"
-              :style="{ background: locColors[loc.name] || 'var(--surface-cream)' }"
+              :color="locColors[loc.name] || 'var(--surface-cream)'"
+              :rotate="rotations[i]"
             >
               <div class="loc-header">
                 <span class="loc-emoji">{{ loc.emoji }}</span>
@@ -50,7 +50,7 @@
               <div class="loc-time" v-if="loc.last_detect_time">
                 最近：{{ formatTime(loc.last_detect_time) }}
               </div>
-            </div>
+            </StickyNote>
           </div>
 
           <!-- 趋势图 -->
@@ -73,6 +73,7 @@ import StatCard from '@/components/StatCard.vue'
 import TrendChart from '@/components/TrendChart.vue'
 import SafetyTicker from '@/components/SafetyTicker.vue'
 import PublicNav from '@/components/PublicNav.vue'
+import StickyNote from '@/components/StickyNote.vue'
 import { getPublicDashboard } from '@/api/public.js'
 
 const router = useRouter()
@@ -88,6 +89,7 @@ const locColors = {
   '操场': 'var(--surface-sand)',
   '花园': 'var(--surface-mint)',
 }
+const rotations = [-0.8, 0.5, -0.4, 0.7, -0.3]
 
 function statusLabel(status) {
   return status === 'active' ? '今天活跃' : status === 'resting' ? '昨天有记录' : '近期无记录'
@@ -182,22 +184,12 @@ onUnmounted(() => {
   margin: 0 0 16px;
 }
 
-/* Location cards — pastel filled */
+/* Location cards — sticky notes grid */
 .location-cards {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 32px;
-}
-.location-card {
-  border-radius: var(--radius-card);
-  padding: var(--card-padding);
-  min-height: 140px;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-.location-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-subtle);
 }
 
 .loc-header {
