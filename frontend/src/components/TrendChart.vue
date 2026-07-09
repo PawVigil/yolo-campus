@@ -108,9 +108,8 @@ function updateChart() {
         },
         markPoint: {
           data: [
-            { type: 'max', name: '最高', symbolSize: 36, label: { fontSize: 11, color: '#1a3300', formatter: '{c}', offset: [0, -8] } },
+            { type: 'max', name: '最高', symbol: 'pin', symbolSize: 1, itemStyle: { color: 'transparent' }, label: { show: true, fontSize: 13, fontWeight: 'bold', color: '#1a3300', formatter: '{c}', offset: [0, -14] } },
           ],
-          itemStyle: { color: 'rgba(26, 51, 0, 0.08)', borderColor: '#1a3300', borderWidth: 1.5 },
           animationDuration: animated ? 400 : 800,
           animationDelay: animated ? 0 : 3000,
         },

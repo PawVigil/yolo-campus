@@ -3,6 +3,39 @@
 import json
 from collections import Counter
 from datetime import datetime, timedelta
+from pathlib import Path
+
+def _load_breed_info():
+    """加载 breed_info.json"""
+    path = Path(__file__).parent.parent / "breed_info.json"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def get_breed_count() -> dict[str, int]:
+    """品种出现次数统计（供 dashboard 和 breed-stats 共用，仅统计 breed_info.json 中已知品种）"""
+    breed_info = _load_breed_info()
+    known_breeds = {v.get("name_cn", "") for v in breed_info.values()}
+    from db import get_db
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            "SELECT result_json FROM detection WHERE total_animals > 0"
+        ).fetchall()
+        counter: Counter = Counter()
+        for r in rows:
+            try:
+                for a in json.loads(r["result_json"]):
+                    cn = a.get("breed_cn", "")
+                    if cn and cn in known_breeds:
+                        counter[cn] += 1
+            except (json.JSONDecodeError, KeyError):
+                pass
+        return dict(counter)
+    finally:
+        conn.close()
 
 from db import get_db
 from models.response import (
@@ -97,17 +130,9 @@ class DashboardService:
                 "SELECT COUNT(DISTINCT location_id) as c FROM detection"
             ).fetchone()["c"]
 
-            # 出现过的品种数
-            det_rows = conn.execute(
-                "SELECT result_json FROM detection WHERE total_animals > 0"
-            ).fetchall()
-            breed_set: set = set()
-            for r in det_rows:
-                try:
-                    for a in json.loads(r["result_json"]):
-                        breed_set.add(a.get("breed_cn", ""))
-                except (json.JSONDecodeError, KeyError):
-                    pass
+            # 出现过的品种数（与 breed-stats 共用同一逻辑）
+            breed_count = get_breed_count()
+            breed_set = {b for b, c in breed_count.items() if c > 0}
 
             stats = PublicStats(
                 total_detections=total,
@@ -137,10 +162,9 @@ class DashboardService:
                     ))
                 else:
                     try:
-                        last_time = datetime.strptime(
-                            last_det["detect_time"][:19],
-                            "%Y-%m-%dT%H:%M:%S"
-                        )
+                        ts = last_det["detect_time"][:19]
+                        # 兼容空格和 T 两种分隔符
+                        last_time = datetime.strptime(ts.replace("T", " "), "%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         last_time = now
 

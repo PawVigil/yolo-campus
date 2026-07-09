@@ -1,6 +1,6 @@
 <template>
   <div class="upload-page">
-    <h2 class="page-title">📤 上传图片检测</h2>
+    <h2 class="page-title">上传图片检测</h2>
 
     <n-grid :cols="2" :x-gap="16" responsive="screen">
       <!-- 左侧：上传区域 -->
@@ -26,11 +26,12 @@
             :show-file-list="false"
           >
             <n-upload-dragger>
-              <div class="upload-dragger-content">
+              <div class="upload-dragger-content" v-if="!previewUrl">
                 <n-icon size="48" class="upload-icon">📷</n-icon>
                 <p class="upload-text">点击或拖拽图片到此处</p>
                 <p class="upload-hint">支持 JPG / PNG，单文件 ≤ 10MB</p>
               </div>
+              <img v-else :src="previewUrl" class="upload-preview-img" />
             </n-upload-dragger>
           </n-upload>
 
@@ -108,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import DetectionResult from '@/components/DetectionResult.vue'
@@ -122,6 +123,7 @@ const locationOptions = ref([])
 const loadingLocations = ref(false)
 const uploadFile = ref(null)
 const uploadRef = ref(null)
+const previewUrl = ref(null)
 const detecting = ref(false)
 const saving = ref(false)
 const saveSuccess = ref(false)
@@ -163,7 +165,10 @@ function onFileChange({ file }) {
       message.error('文件大小超过 10MB 限制')
       return
     }
+    // 释放旧 URL
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
     uploadFile.value = f
+    previewUrl.value = URL.createObjectURL(f)
   }
 }
 
@@ -212,6 +217,7 @@ function resetDetect() {
   uploadRef.value?.clear()
   saveSuccess.value = false
   savedId.value = null
+  if (previewUrl.value) { URL.revokeObjectURL(previewUrl.value); previewUrl.value = null }
 }
 
 function shareToCommunity() {
@@ -220,6 +226,10 @@ function shareToCommunity() {
   const loc = selectedLocation.value || ''
   router.push(`/admin/community?share_image=${img}&share_location=${loc}`)
 }
+
+onUnmounted(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+})
 
 onMounted(async () => {
   loadingLocations.value = true
@@ -236,11 +246,21 @@ onMounted(async () => {
 
 <style scoped>
 .upload-page { max-width: 1100px; margin: 0 auto; }
-.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
+.page-title { margin-bottom: 20px; font-size: 28px; color: var(--color-forest-ink); text-align: left; }
 .upload-dragger-content { padding: 20px; }
 .upload-icon { opacity: 0.5; }
 .upload-text { font-size: 16px; margin: 10px 0 4px; color: var(--color-forest-ink); }
 .upload-hint { font-size: 13px; color: var(--color-whisper-gray); }
+.upload-preview-img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+:deep(.n-upload-dragger) {
+  padding: 0 !important;
+}
 .file-info { margin-top: 12px; }
 .detect-btn { margin-top: 20px; }
 .tip-list { text-align: left; color: var(--color-forest-ink); font-size: 14px; }

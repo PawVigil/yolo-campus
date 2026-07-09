@@ -1,6 +1,6 @@
 <template>
   <div class="records-page">
-    <h2 class="page-title">📋 检测记录管理</h2>
+    <h2 class="page-title">检测记录管理</h2>
 
     <!-- 筛选条件 -->
     <n-card :bordered="false" class="filter-card">
@@ -237,7 +237,7 @@ onMounted(async () => {
 
 <style scoped>
 .records-page { max-width: 1200px; }
-.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
+.page-title { margin-bottom: 20px; font-size: 28px; color: var(--color-forest-ink); }
 .filter-card { margin-bottom: 16px; }
 .ml-8 { margin-left: 8px; }
 .table-card { margin-bottom: 16px; }

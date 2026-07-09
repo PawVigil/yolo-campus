@@ -1,6 +1,6 @@
 <template>
   <div class="export-page">
-    <h2 class="page-title">📥 数据导出</h2>
+    <h2 class="page-title">数据导出</h2>
 
     <!-- 报告类型选择 -->
     <n-card :bordered="false" class="type-card">
@@ -167,7 +167,7 @@ function downloadFile() {
 
 <style scoped>
 .export-page { max-width: 800px; }
-.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
+.page-title { margin-bottom: 20px; font-size: 28px; color: var(--color-forest-ink); }
 .type-card { margin-bottom: 16px; }
 .date-selector { margin: 16px 0; max-width: 400px; }
 .preview-card { margin-bottom: 16px; }
