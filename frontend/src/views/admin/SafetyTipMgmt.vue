@@ -1,6 +1,6 @@
 <template>
   <div class="safety-page">
-    <h2 class="page-title">⚠️ 安全提醒管理</h2>
+    <h2 class="page-title">安全提醒管理</h2>
 
     <!-- 自动建议面板 -->
     <n-card :bordered="false" title="🤖 AI 自动建议" class="suggestion-card">
@@ -260,7 +260,7 @@ onMounted(async () => {
 
 <style scoped>
 .safety-page { max-width: 1100px; }
-.page-title { margin-bottom: 20px; font-size: 22px; color: var(--color-forest-ink); }
+.page-title { margin-bottom: 20px; font-size: 28px; color: var(--color-forest-ink); }
 .suggestion-card { margin-bottom: 16px; }
 .suggestion-list { display: flex; flex-direction: column; gap: 12px; }
 .form-card { margin-bottom: 16px; }

@@ -56,21 +56,24 @@ import { authStore } from '@/stores/auth.js'
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
-const activeMenu = ref('dashboard')
 
 const menuOptions = [
-  { label: '📊 总览看板', key: 'dashboard' },
-  { label: '📤 上传检测', key: 'upload' },
-  { label: '📋 记录管理', key: 'records' },
-  { label: '⚠️ 安全提醒管理', key: 'safety-tips' },
-  { label: '📸 社区分享管理', key: 'community' },
-  { label: '📥 数据导出', key: 'export' },
+  { label: '总览看板', key: 'dashboard' },
+  { label: '上传检测', key: 'upload' },
+  { label: '记录管理', key: 'records' },
+  { label: '安全提醒管理', key: 'safety-tips' },
+  { label: '社区分享管理', key: 'community' },
+  { label: '数据导出', key: 'export' },
 ]
+
+const activeMenu = computed(() => {
+  const seg = route.path.replace('/admin/', '').split('/')[0].split('?')[0]
+  return seg || 'dashboard'
+})
 
 const pageTitle = computed(() => route.meta.title || '管理端')
 
 function onMenuChange(key) {
-  activeMenu.value = key
   router.push(`/admin/${key}`)
 }
 
