@@ -11,13 +11,14 @@
         :options="menuOptions"
         @update:value="onChange"
       />
-      <n-button
-        text
-        class="admin-link"
-        @click="$router.push('/login')"
-      >
-        管理入口
-      </n-button>
+      <div class="nav-actions">
+        <n-button text class="nav-link-btn" @click="$router.push('/login')">
+          管理入口
+        </n-button>
+        <n-button class="nav-cta-btn" @click="$router.push('/community')">
+          上传分享
+        </n-button>
+      </div>
     </div>
   </div>
 </template>
@@ -95,16 +96,36 @@ watch(() => props.menuKey, (k) => { active.value = k })
   color: var(--color-forest-ink);
 }
 
-.admin-link {
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-left: auto;
   flex-shrink: 0;
 }
 
-/* Horizontal menu: current page indicator */
+.nav-link-btn {
+  font-weight: var(--weight-medium) !important;
+  font-size: 14px !important;
+  color: var(--color-forest-ink) !important;
+}
+
+.nav-cta-btn {
+  font-weight: var(--weight-medium) !important;
+  font-size: 14px !important;
+  background: var(--color-forest-ink) !important;
+  color: var(--color-cream-paper) !important;
+  border-radius: var(--radius-button) !important;
+  padding: 8px 18px !important;
+  height: auto !important;
+}
+
+/* Horizontal menu spacing */
 :deep(.n-menu .n-menu-item-content) {
   font-weight: var(--weight-medium);
   font-size: 14px;
-  padding: 6px 12px;
+  padding: 8px 14px !important;
+  margin: 0 2px;
   border-radius: var(--radius-button);
   transition: background var(--transition-fast);
 }

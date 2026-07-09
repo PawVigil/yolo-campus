@@ -6,9 +6,10 @@
       <n-spin :show="loading">
         <n-empty v-if="!loading && error" description="数据加载失败，请稍后重试" class="error-state" />
         <template v-else-if="!loading && data">
-          <!-- 时间范围标记 -->
-          <div class="time-badge-row">
-            <span class="time-badge">近 14 天数据</span>
+          <!-- Hero 区域 -->
+          <div class="hero-section">
+            <h1 class="hero-title">校园动物实时观测</h1>
+            <p class="hero-subtitle">YOLOv8 智能检测 · 覆盖 5 个校园地点 · 近 14 天数据</p>
           </div>
 
           <!-- 统计数字 — 裸数字风格 -->
@@ -136,24 +137,28 @@ onUnmounted(() => {
 .live-content {
   max-width: var(--page-max-width);
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: 40px 20px 60px;
 }
 
-/* Time badge */
-.time-badge-row {
+/* Hero section */
+.hero-section {
   text-align: center;
-  margin-bottom: 24px;
+  padding: 32px 0 48px;
 }
-.time-badge {
-  display: inline-block;
+.hero-title {
   font-family: var(--font-body);
-  font-size: var(--text-body-sm);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
+  font-size: 40px;
+  line-height: 1.15;
   color: var(--color-forest-ink);
-  background: var(--color-cream-paper);
-  border: 1px solid var(--color-pencil-gray);
-  padding: 6px 24px;
-  border-radius: var(--radius-full);
+  margin: 0 0 12px;
+}
+.hero-subtitle {
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  font-size: 16px;
+  color: var(--color-whisper-gray);
+  margin: 0;
 }
 
 /* Hero stats row */
@@ -162,7 +167,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: flex-start;
   gap: 0;
-  margin-bottom: 40px;
+  margin-bottom: 56px;
 }
 .stats-divider {
   width: 1px;
