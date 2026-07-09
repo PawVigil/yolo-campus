@@ -123,4 +123,44 @@
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
+
+  /* ========================================
+     Notice Board — 公告栏视觉体系
+     材质：木板 + 羊皮纸 + 墨水 + 铜钉
+     ======================================== */
+
+  /* Wood — 木板三层 */
+  --color-wood-dark: #69523A;
+  --color-wood-base: #846B4B;
+  --color-wood-light: #9A8663;
+
+  /* Paper — 羊皮纸 */
+  --color-paper-main: #D3C6A8;
+  --color-paper-old: #C0B08D;
+  --color-paper-edge: #A48E68;
+  --color-paper-hover: #DDD0B2;
+
+  /* Ink — 墨水 */
+  --color-ink-black: #201917;
+  --color-ink-dark: #3A2A1F;
+  --color-ink-light: #5C4734;
+
+  /* Light & Shadow */
+  --color-sunlight: rgba(255,245,220,.35);
+  --shadow-board-soft: rgba(0,0,0,.18);
+  --shadow-board-deep: rgba(0,0,0,.35);
+
+  /* Accent — 天空蓝点缀 */
+  --color-sky: #507E95;
+
+  /* Status — 提醒等级（印章色） */
+  --color-notice-normal: #8A5A3B;
+  --color-notice-warning: #C98A2D;
+  --color-notice-danger: #A03D2B;
+  --color-notice-archive: #7A7A72;
+
+  /* Copper Pin */
+  --color-copper-pin: #B87333;
+  --color-copper-pin-light: #D4944A;
+  --color-copper-pin-dark: #8B5E2A;
 }
