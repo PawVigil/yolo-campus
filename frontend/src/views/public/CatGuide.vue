@@ -11,7 +11,7 @@
           <p class="page-subtitle">基于各地点真实出没数据，帮你找到最佳观测时机</p>
 
           <div class="guide-cards">
-            <n-card v-for="loc in data.locations" :key="loc.name" :bordered="false" class="guide-card">
+            <n-card v-for="loc in data.locations" :key="loc.name" :bordered="false" class="guide-card" :style="{ background: locBgColors[loc.name] || 'var(--surface-cream)' }">
               <div class="card-top">
                 <div class="card-emoji">{{ loc.emoji }}</div>
                 <div class="card-header">
@@ -78,6 +78,14 @@ const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
 const error = ref(false)
+
+const locBgColors = {
+  '食堂': 'var(--surface-terracotta)',
+  '宿舍': 'var(--surface-blush)',
+  '图书馆': 'var(--surface-teal)',
+  '操场': 'var(--surface-sand)',
+  '花园': 'var(--surface-mint)',
+}
 
 
 

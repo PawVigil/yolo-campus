@@ -42,3 +42,54 @@ a:hover {
   background: var(--color-highlighter-yellow);
   color: var(--color-forest-ink);
 }
+
+/* ========================================
+   Naive UI Global Overrides — Paper feel
+   ======================================== */
+
+/* Cards: flat on paper, lift only on hover */
+.n-card {
+  box-shadow: none !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.n-card:hover {
+  box-shadow: var(--shadow-subtle-2) !important;
+}
+
+/* Dialogs/Modals: subtle border instead of heavy shadow */
+.n-modal {
+  box-shadow: var(--shadow-subtle-2) !important;
+}
+
+/* Tables: thinner, cleaner */
+.n-table th {
+  font-weight: var(--weight-medium) !important;
+  font-size: var(--text-micro) !important;
+  color: var(--color-pencil-gray) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+.n-table td {
+  font-size: var(--text-body-sm) !important;
+  border-color: var(--color-pencil-gray) !important;
+}
+
+/* Empty states: softer text */
+.n-empty__description {
+  color: var(--color-whisper-gray) !important;
+}
+
+/* Divider: always pencil gray */
+.n-divider {
+  border-color: var(--color-pencil-gray) !important;
+}
+
+/* Progress: Forest Ink */
+.n-progress .n-progress__fill {
+  background: var(--color-forest-ink) !important;
+}
+
+/* Breadcrumb / subtle UI */
+.n-thing .n-thing-header__title {
+  color: var(--color-forest-ink) !important;
+}

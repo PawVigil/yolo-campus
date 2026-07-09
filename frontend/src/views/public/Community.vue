@@ -14,7 +14,11 @@
 
       <!-- 分享卡片列表 -->
       <n-spin :show="loading">
-        <n-empty v-if="!loading && items.length === 0" description="今天还没有人分享" class="empty-state" />
+        <div v-if="!loading && items.length === 0" class="empty-state">
+          <div class="empty-illustration">🐾</div>
+          <p class="empty-title">今天还没有人分享</p>
+          <p class="empty-hint">成为第一个分享校园可爱动物的人吧！</p>
+        </div>
         <div v-else class="community-grid">
           <n-card v-for="item in items" :key="item.id" :bordered="false" class="community-card" @click="openDetail(item)">
             <img :src="item.images[0]" class="cover-image" height="300" />
@@ -209,7 +213,10 @@ onMounted(async () => {
 .page-title { text-align: center; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
 .page-subtitle { text-align: center; color: var(--color-whisper-gray); margin-bottom: 20px; }
 .top-bar { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; align-items: center; }
-.empty-state { margin-top: 80px; }
+.empty-state { margin-top: 80px; text-align: center; }
+.empty-illustration { font-size: 64px; opacity: 0.5; margin-bottom: 16px; }
+.empty-title { font-family: var(--font-body); font-size: 18px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); margin: 0 0 8px; }
+.empty-hint { font-family: var(--font-body); font-size: 14px; color: var(--color-whisper-gray); margin: 0; }
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 .community-card { cursor: pointer; transition: transform var(--transition-fast); position: relative; }
 .community-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-subtle-2); }

@@ -99,4 +99,20 @@ watch(() => props.menuKey, (k) => { active.value = k })
   margin-left: auto;
   flex-shrink: 0;
 }
+
+/* Horizontal menu: current page indicator */
+:deep(.n-menu .n-menu-item-content) {
+  font-weight: var(--weight-medium);
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: var(--radius-button);
+  transition: background var(--transition-fast);
+}
+:deep(.n-menu .n-menu-item-content:hover) {
+  background: rgba(26, 51, 0, 0.05);
+}
+:deep(.n-menu .n-menu-item--selected .n-menu-item-content) {
+  background: var(--color-highlighter-yellow) !important;
+  font-weight: var(--weight-semibold);
+}
 </style>
