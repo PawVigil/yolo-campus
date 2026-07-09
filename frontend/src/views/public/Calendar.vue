@@ -28,38 +28,50 @@
 
           <!-- 透视蜿蜒墨线（粗细随远近渐变） -->
           <path :d="inkPath" fill="var(--color-forest-ink)" opacity="0.28" stroke="none" />
-          <!-- 墨线中脊（虚线流动） -->
-          <path :d="centerPath" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="8 14" class="ink-flow" />
+          <!-- 墨线中脊 -->
+          <path :d="centerPath" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="8 14" />
 
-          <!-- 转折点标记 -->
-          <g v-for="(k, i) in knotMarkers" :key="'k'+i">
-            <circle :cx="k.x" :cy="k.y" r="18" fill="rgba(232,153,112,0.2)" stroke="#e89970" stroke-width="1.5" />
-            <text :x="k.x" :y="k.y+1" text-anchor="middle" dominant-baseline="central"
-                  font-size="13" font-weight="700" fill="#e89970" font-family="monospace">{{ i+1 }}</text>
-            <line :x1="k.x" :y1="k.y" :x2="k.x" :y2="k.y + 26" stroke="#e89970" stroke-width="1" stroke-dasharray="3 3" />
-            <text :x="k.x" :y="k.y + 32" text-anchor="middle" font-size="11" fill="#e89970" font-family="monospace">{{ k.label }}</text>
+          <!-- 沿线爪印装饰 -->
+          <g v-for="(d, di) in decorPoints" :key="'d'+di">
+            <g :transform="`translate(${d.x}, ${d.y}) rotate(${d.rot}) scale(${d.scale})`"
+               :opacity="d.opacity" fill="#1a3300" stroke="none">
+              <ellipse cx="0" cy="-3" rx="3.5" ry="4.5" />
+              <circle cx="-5.5" cy="-9" r="2.2" />
+              <circle cx="-1.5" cy="-11.5" r="2.2" />
+              <circle cx="2.5" cy="-11.5" r="2.2" />
+              <circle cx="6" cy="-8.5" r="2.2" />
+            </g>
           </g>
 
           <!-- 日期节点 -->
           <g v-for="(pt, idx) in dayPoints" :key="idx">
             <!-- 节点光晕 -->
             <circle
-              v-if="pt.day.hasAnimals && !pt.day.isFuture && pt.day.inMonth"
               :cx="pt.x" :cy="pt.y"
               :r="pt.r + 10"
               :fill="pt.day.isToday ? 'rgba(255,213,79,0.3)' : 'rgba(26,51,0,0.05)'"
             />
-            <!-- 节点圆 -->
+            <!-- 外环（虚线） -->
+            <circle
+              :cx="pt.x" :cy="pt.y" :r="pt.r + 5"
+              fill="none"
+              :stroke="pt.day.isToday ? '#1a3300' : 'rgba(26,51,0,0.25)'"
+              :stroke-width="1"
+              stroke-dasharray="3 3"
+              :opacity="0.4 + pt.depth * 0.4"
+              style="pointer-events: none"
+            />
+            <!-- 内环（实心） -->
             <circle
               :cx="pt.x" :cy="pt.y" :r="pt.r"
-              :fill="nodeFill(pt)"
-              :stroke="nodeStroke(pt)"
-              :stroke-width="pt.day.isToday ? 2.5 : 1.2"
-              :opacity="pt.day.inMonth ? (0.5 + pt.depth * 0.5) : 0.12"
+              :fill="pt.day.isToday ? '#fff8e1' : '#e8f5e9'"
+              :stroke="pt.day.isToday ? '#1a3300' : 'rgba(26,51,0,0.4)'"
+              :stroke-width="pt.day.isToday ? 2.5 : 1.5"
+              :opacity="0.5 + pt.depth * 0.5"
               :filter="pt.depth > 0.5 ? 'url(#nodeShadow)' : undefined"
               :class="{ 'node-today': pt.day.isToday }"
-              :style="{ cursor: pt.day.hasAnimals && !pt.day.isFuture ? 'pointer' : 'default' }"
-              @click="pt.day.hasAnimals && !pt.day.isFuture && openDetail(pt.day)"
+              style="cursor: pointer"
+              @click="openDetail(pt.day)"
               @mouseenter="hoveredIdx = idx"
               @mouseleave="hoveredIdx = -1"
             />
@@ -67,29 +79,30 @@
             <text
               :x="pt.x" :y="pt.y + 1"
               text-anchor="middle" dominant-baseline="central"
-              :font-size="9 + pt.depth * 5"
-              :font-weight="pt.day.isToday ? 800 : pt.day.inMonth ? 500 : 300"
-              :fill="pt.day.isToday ? '#1a3300' : pt.day.inMonth ? '#1a3300' : '#b6b6b6'"
+              :font-size="10 + pt.depth * 6"
+              :font-weight="700"
+              fill="#1a3300"
               font-family="'Roboto Mono', monospace"
               style="pointer-events: none;"
             >{{ pt.day.dayNum }}</text>
-            <!-- 动物小点 -->
+            <!-- 环上装饰点：猫 -->
             <circle
-              v-if="pt.day.hasCat && pt.day.inMonth && !pt.day.isFuture"
-              :cx="pt.x - pt.r * 0.45" :cy="pt.y + pt.r + 6"
-              :r="2.5 + pt.depth * 1.5" fill="#1a3300" :opacity="0.35 + pt.depth * 0.45"
+              v-if="pt.day.hasCat"
+              :cx="pt.x - (pt.r + 5)" :cy="pt.y"
+              :r="2.5 + pt.depth * 1.5" fill="#1a3300" :opacity="0.5 + pt.depth * 0.4"
             />
+            <!-- 环上装饰点：狗 -->
             <circle
-              v-if="pt.day.hasDog && pt.day.inMonth && !pt.day.isFuture"
-              :cx="pt.x + pt.r * 0.45" :cy="pt.y + pt.r + 6"
-              :r="2.5 + pt.depth * 1.5" fill="#e89970" :opacity="0.35 + pt.depth * 0.45"
+              v-if="pt.day.hasDog"
+              :cx="pt.x + (pt.r + 5)" :cy="pt.y"
+              :r="2.5 + pt.depth * 1.5" fill="#e89970" :opacity="0.5 + pt.depth * 0.4"
             />
           </g>
         </svg>
 
         <!-- Hover Tooltip -->
         <div
-          v-if="hoveredIdx >= 0 && dayPoints[hoveredIdx]?.day.hasAnimals && dayPoints[hoveredIdx]?.day.inMonth"
+          v-if="hoveredIdx >= 0 && dayPoints[hoveredIdx]"
           class="river-tooltip"
           :style="tooltipPos"
         >
@@ -150,7 +163,6 @@ const svgH = 960
 const cx = svgW / 2
 const vanishY = 30
 const bottomY = 850
-const rowCount = 6
 const totalRange = bottomY - vanishY
 
 function perspectiveDepth(t) {
@@ -185,16 +197,13 @@ function meanderX(t) {
 }
 
 // ══ 墨线路径 ══
-const inkSamples = 60
+const inkSamples = 150
 
 function curvePath(points, close) {
   if (points.length < 2) return ''
   let d = `M ${points[0].x} ${points[0].y}`
   for (let i = 1; i < points.length; i++) {
-    const p = points[i - 1]
-    const c = points[i]
-    const cpY = p.y + (c.y - p.y) * 0.5
-    d += ` C ${p.x} ${cpY} ${c.x} ${cpY} ${c.x} ${c.y}`
+    d += ` L ${points[i].x} ${points[i].y}`
   }
   if (close) d += ' Z'
   return d
@@ -227,6 +236,91 @@ function genInkPoints(count) {
 
 const pointsCache = computed(() => genInkPoints(inkSamples))
 
+// ══ 节点形状生成 ══
+// 墨滴形
+function blobPath(cx, cy, r, seed) {
+  const n = 10
+  const pts = []
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2
+    const jitter = 1 + 0.18 * Math.sin(seed * 137.5 + i * 2.3)
+      + 0.10 * Math.cos(seed * 83.1 + i * 3.7)
+      + 0.06 * Math.sin(seed * 211.3 + i * 5.1)
+    const rr = r * jitter
+    pts.push({ x: cx + Math.cos(angle) * rr, y: cy + Math.sin(angle) * rr })
+  }
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n]
+    const p1 = pts[i]
+    const p2 = pts[(i + 1) % n]
+    const p3 = pts[(i + 2) % n]
+    const t = 0.35
+    d += ` C ${(p1.x + (p2.x - p0.x) * t).toFixed(1)} ${(p1.y + (p2.y - p0.y) * t).toFixed(1)}, ${(p2.x - (p3.x - p1.x) * t).toFixed(1)} ${(p2.y - (p3.y - p1.y) * t).toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`
+  }
+  return d + ' Z'
+}
+// 树叶形
+function leafPath(cx, cy, r, seed) {
+  const rot = (seed * 47) % 360
+  const rad = rot * Math.PI / 180
+  const w = r * 0.6
+  const h = r * 1.15
+  // 主轴方向
+  const ux = Math.cos(rad), uy = Math.sin(rad)
+  const nx = -uy, ny = ux
+  const tip = { x: cx + ux * h, y: cy + uy * h }
+  const base = { x: cx - ux * h, y: cy - uy * h }
+  const l = { x: cx + nx * w, y: cy + ny * w }
+  const r2 = { x: cx - nx * w, y: cy - ny * w }
+  // 两片叶瓣用贝塞尔
+  const d = `M ${tip.x.toFixed(1)} ${tip.y.toFixed(1)}`
+    + ` C ${(cx + nx * w * 0.8 + ux * h * 0.2).toFixed(1)} ${(cy + ny * w * 0.8 + uy * h * 0.2).toFixed(1)},`
+    + ` ${(cx + nx * w * 0.6 - ux * h * 0.3).toFixed(1)} ${(cy + ny * w * 0.6 - uy * h * 0.3).toFixed(1)},`
+    + ` ${base.x.toFixed(1)} ${base.y.toFixed(1)}`
+    + ` C ${(cx - nx * w * 0.6 - ux * h * 0.3).toFixed(1)} ${(cy - ny * w * 0.6 - uy * h * 0.3).toFixed(1)},`
+    + ` ${(cx - nx * w * 0.8 + ux * h * 0.2).toFixed(1)} ${(cy - ny * w * 0.8 + uy * h * 0.2).toFixed(1)},`
+    + ` ${tip.x.toFixed(1)} ${tip.y.toFixed(1)}`
+  return { d, vein: { x1: tip.x, y1: tip.y, x2: base.x, y2: base.y } }
+}
+
+// ══ 沿线装饰（爪印）══
+const decorSeed = [
+  0.06, 0.10, 0.16, 0.20, 0.26, 0.30, 0.36, 0.40,
+  0.46, 0.50, 0.56, 0.60, 0.66, 0.70, 0.76, 0.80,
+  0.86, 0.90, 0.94,
+]
+
+const decorPoints = computed(() => {
+  const pts = pointsCache.value
+  if (pts.length < 10) return []
+  return decorSeed.map((seed, i) => {
+    const t = 0.04 + seed * 0.92
+    const idx = Math.round(t * (pts.length - 1))
+    const p = pts[Math.min(idx, pts.length - 1)]
+    const next = pts[Math.min(idx + 1, pts.length - 1)]
+    // 切线方向（路径走向）
+    const dx = next.x - p.x
+    const dy = next.y - p.y
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+    // 法线方向（侧向偏移）
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = -dy / len
+    const ny = dx / len
+    const side = (i % 2 === 0) ? 1 : -1
+    const offsetDist = p.halfW * (1.6 + seed * 2)
+    const x = p.x + nx * offsetDist * side
+    const y = p.y + ny * offsetDist * side
+    const depth = p.scale
+    return {
+      x, y,
+      rot: angle + 90,
+      scale: 0.8 + depth * 1.4,
+      opacity: 0.12 + depth * 0.22,
+    }
+  })
+})
+
 const inkPath = computed(() => {
   const pts = pointsCache.value
   const halfWs = pts.map(p => p.halfW)
@@ -257,46 +351,14 @@ const viewBoxStr = computed(() => {
   return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`
 })
 
-const rows = Array.from({ length: rowCount }, (_, i) => {
-  const t = i / (rowCount - 1)
-  const depth = perspectiveDepth(t)
-  const y = vanishY + depth * totalRange
-  const scale = 0.06 + depth * 0.94
-  const halfW = 1.5 + scale * 13
-  return { y, scale, halfW, t }
-})
-
-function centerYs() {
-  return rows.map(r => ({ x: meanderX(r.t), y: r.y }))
-}
-
-// 转折点标记坐标
-const knotMarkers = computed(() => {
-  return meanderKnots.map(k => {
-    const depth = perspectiveDepth(k.t)
-    const y = vanishY + depth * totalRange
-    const x = cx + (k.offset / maxOffset) * swingRatio * svgW
-    const sign = k.offset >= 0 ? '+' : ''
-    return { x, y, label: `${sign}${k.offset}` }
-  })
-})
-
 // ---- 日期数据 ----
 const calendarDays = computed(() => {
   const firstDay = new Date(viewYear.value, viewMonth.value - 1, 1)
   const lastDay = new Date(viewYear.value, viewMonth.value, 0)
   const daysInMonth = lastDay.getDate()
-  const startWeekDay = firstDay.getDay()
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   const days = []
-  const prevLastDay = new Date(viewYear.value, viewMonth.value - 1, 0)
-  for (let i = startWeekDay - 1; i >= 0; i--) {
-    const d = prevLastDay.getDate() - i
-    const m = viewMonth.value === 1 ? 12 : viewMonth.value - 1
-    const y = viewMonth.value === 1 ? viewYear.value - 1 : viewYear.value
-    days.push({ dayNum: d, date: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, inMonth: false, hasAnimals: false, hasCat: false, hasDog: false, isToday: false, isFuture: false })
-  }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${viewYear.value}-${String(viewMonth.value).padStart(2,'0')}-${String(d).padStart(2,'0')}`
     const dayData = calendarData.value.days?.find(x => x.date === dateStr)
@@ -312,52 +374,24 @@ const calendarDays = computed(() => {
       isFuture: dateStr > todayStr,
     })
   }
-  const remaining = 42 - days.length
-  for (let d = 1; d <= remaining; d++) {
-    const m = viewMonth.value === 12 ? 1 : viewMonth.value + 1
-    const y = viewMonth.value === 12 ? viewYear.value + 1 : viewYear.value
-    days.push({ dayNum: d, date: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, inMonth: false, hasAnimals: false, hasCat: false, hasDog: false, isToday: false, isFuture: true })
-  }
   return days
 })
 
-// ---- 节点坐标（透视分布） ----
+// ---- 节点坐标（沿墨线均匀分布） ----
 const dayPoints = computed(() => {
-  const center = centerYs()
-  const pts = []
-  for (let i = 0; i < 42; i++) {
-    const rowIdx = Math.floor(i / 7)
-    const colIdx = i % 7
-    const row = rows[rowIdx]
-    const base = center[rowIdx]
-    if (!row || !base) continue
-    const spread = row.halfW * 0.65
-    const x = base.x - spread + (colIdx / 6) * spread * 2
-    const jitter = (colIdx % 2 === 0 ? -1 : 1) * (2 + row.scale * 5)
-    pts.push({
-      x,
-      y: base.y + jitter,
-      r: 10 + row.scale * 14,
-      depth: row.scale,
-      row: row,
-      day: calendarDays.value[i],
-    })
-  }
-  return pts
+  const eligible = calendarDays.value.filter(d => d.hasAnimals && !d.isFuture && d.inMonth)
+  if (!eligible.length) return []
+  return eligible.map((day, i) => {
+    const t = 0.05 + (i / Math.max(eligible.length - 1, 1)) * 0.9
+    const depth = perspectiveDepth(t)
+    const y = vanishY + depth * totalRange
+    const scale = 0.06 + depth * 0.94
+    const x = meanderX(t)
+    const r = 16 + scale * 18
+    const leaf = leafPath(x, y, r, day.dayNum + i * 1.3)
+    return { x, y, r, depth: scale, day, blob: leaf.d, vein: leaf.vein }
+  })
 })
-
-// ---- 节点样式 ----
-function nodeFill(pt) {
-  if (pt.day.isToday) return '#fff8e1'
-  if (!pt.day.inMonth) return '#f0ede6'
-  if (pt.day.hasAnimals && !pt.day.isFuture) return '#e8f5e9'
-  return '#fdfcfa'
-}
-function nodeStroke(pt) {
-  if (pt.day.isToday) return '#1a3300'
-  if (pt.day.hasAnimals && !pt.day.isFuture) return 'rgba(26,51,0,0.35)'
-  return 'rgba(26,51,0,0.12)'
-}
 
 // ---- Tooltip ----
 const tooltipPos = computed(() => {
@@ -412,16 +446,6 @@ onMounted(() => fetchCalendar())
 
 .river-wrap { position: relative; width: 100%; }
 .river-svg { width: 100%; height: auto; display: block; }
-
-/* 中脊虚线流动 */
-.ink-flow {
-  stroke-dashoffset: 0;
-  animation: flowDown 4s linear infinite;
-}
-@keyframes flowDown {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -52; }
-}
 
 .node-today { animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse {
