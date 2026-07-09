@@ -79,31 +79,14 @@ async def public_dashboard():
 
 @router.get("/breed-stats")
 async def breed_stats():
-    """返回各品种的检测次数统计"""
-    conn = get_db()
-    try:
-        breed_info = _get_breed_info()
-        # 构建中文名→英文key的映射
-        cn_to_en = {}
-        for key, info in breed_info.items():
-            cn_to_en[info.get("name_cn", key)] = key
-
-        rows = conn.execute(
-            "SELECT result_json FROM detection WHERE total_animals > 0"
-        ).fetchall()
-
-        breed_count: Counter = Counter()
-        for r in rows:
-            try:
-                for a in json.loads(r["result_json"]):
-                    breed_count[a.get("breed_cn", "")] += 1
-            except (json.JSONDecodeError, KeyError):
-                pass
-
-        stats = {b: c for b, c in breed_count.items()}
-        return {"stats": stats, "breed_info": breed_info}
-    finally:
-        conn.close()
+    """返回各品种的检测次数统计（仅统计 breed_info.json 中已知品种）"""
+    breed_info = _get_breed_info()
+    known_breeds = {v.get("name_cn", "") for v in breed_info.values()}
+    from services.dashboard_service import get_breed_count
+    all_stats = get_breed_count()
+    # 仅保留 breed_info.json 中存在的品种
+    stats = {k: v for k, v in all_stats.items() if k in known_breeds}
+    return {"stats": stats, "breed_info": breed_info}
 
 
 # ======================================================================
@@ -242,6 +225,7 @@ async def rankings():
             return RankingsResponse(
                 most_seen=MostSeenRank(breed="暂无", count=0, percentage=0),
                 homebody=HomebodyRank(breed="暂无", location="暂无", percentage=0),
+                homebody_top5=[],
                 rare=RareRank(breed="暂无", count=0),
                 busiest_place=BusiestPlaceRank(name="暂无", count=0, percentage=0),
                 best_time=BestTimeRank(hour_range="暂无", avg_count=0),
@@ -271,6 +255,16 @@ async def rankings():
         homebody = max(breed_concentration.items(),
                        key=lambda x: x[1]["percentage"])
 
+        # 集中度 TOP5
+        homebody_top5_sorted = sorted(
+            breed_concentration.items(),
+            key=lambda x: x[1]["percentage"], reverse=True
+        )[:5]
+        homebody_top5 = [
+            HomebodyRank(breed=b, location=d["location"], percentage=round(d["percentage"], 2))
+            for b, d in homebody_top5_sorted
+        ]
+
         # 3. 独行侠——出现次数最少的品种
         rare_breed, rare_count = breed_counts.most_common()[-1]
 
@@ -294,6 +288,7 @@ async def rankings():
                 location=homebody[1]["location"],
                 percentage=round(homebody[1]["percentage"], 2)
             ),
+            homebody_top5=homebody_top5,
             rare=RareRank(
                 breed=rare_breed,
                 count=rare_count

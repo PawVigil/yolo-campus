@@ -259,6 +259,7 @@ class RankingsResponse(BaseModel):
     """C4. GET /api/public/rankings"""
     most_seen: MostSeenRank
     homebody: HomebodyRank
+    homebody_top5: list[HomebodyRank] = []
     rare: RareRank
     busiest_place: BusiestPlaceRank
     best_time: BestTimeRank

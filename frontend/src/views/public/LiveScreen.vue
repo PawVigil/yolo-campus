@@ -43,11 +43,11 @@
               :rotate="rotations[i]"
             >
               <div class="loc-header">
-                <span class="loc-emoji">{{ loc.emoji }}</span>
+                <span class="loc-emoji">{{ locEmojis[loc.name] || loc.emoji }}</span>
                 <span class="loc-name">{{ loc.name }}</span>
-                <span class="loc-status" :class="`status-${loc.status}`">
+                <span class="loc-status" :class="`status-${getTimeInfo(loc.last_detect_time).status}`">
                   <span class="status-dot"></span>
-                  {{ statusLabel(loc.status) }}
+                  {{ getTimeInfo(loc.last_detect_time).label }}
                 </span>
               </div>
               <div class="loc-body">
@@ -56,8 +56,8 @@
                 </div>
                 <div v-else class="loc-empty">暂无记录</div>
               </div>
-              <div class="loc-time" v-if="loc.last_detect_time">
-                最近：{{ formatTime(loc.last_detect_time) }}
+              <div class="loc-time">
+                {{ getTimeInfo(loc.last_detect_time).timeText }}
               </div>
             </StickyNote>
           </div>
@@ -109,27 +109,42 @@ function animateCountUp(target) {
   animFrame = requestAnimationFrame(tick)
 }
 
+const locEmojis = {
+  '食堂': '🍽️',
+  '宿舍': '🏠',
+  '图书馆': '📚',
+  '操场': '🏟️',
+  '花园': '🌳',
+}
+
 const locColors = {
-  '食堂': 'var(--surface-terracotta)',
-  '宿舍': 'var(--surface-blush)',
-  '图书馆': 'var(--surface-teal)',
-  '操场': 'var(--surface-sand)',
-  '花园': 'var(--surface-mint)',
+  '食堂': 'linear-gradient(135deg, #fce8db 0%, #f5c8b0 40%, #eda889 100%)',
+  '宿舍': 'linear-gradient(135deg, #fce4e8 0%, #f2bec7 40%, #e899a8 100%)',
+  '图书馆': 'linear-gradient(135deg, #ddefe9 0%, #b3d9cf 40%, #8cc4b5 100%)',
+  '操场': 'linear-gradient(135deg, #f5ede0 0%, #e8d5b8 40%, #d9bf98 100%)',
+  '花园': 'linear-gradient(135deg, #ddf0dd 0%, #b4e2b4 40%, #8dd48d 100%)',
 }
 const rotations = [-0.8, 0.5, -0.4, 0.7, -0.3]
 
-function statusLabel(status) {
-  return status === 'active' ? '今天活跃' : status === 'resting' ? '昨天有记录' : '近期无记录'
-}
-
-function formatTime(t) {
-  if (!t) return ''
-  const d = new Date(t)
+function getTimeInfo(t) {
+  if (!t) return { status: 'no_record', label: '近期无记录', timeText: '最近：无记录' }
+  const d = new Date(t.replace(' ', 'T'))
   const now = new Date()
-  const diffMin = Math.floor((now - d) / 60000)
-  if (diffMin < 60) return `${diffMin}分钟前`
-  if (diffMin < 1440) return `${Math.floor(diffMin / 60)}小时前`
-  return `${Math.floor(diffMin / 1440)}天前`
+  const diffH = (now - d) / 3600000
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000)
+  if (d >= todayStart) {
+    const h = Math.floor(diffH)
+    return { status: 'active', label: '今天活跃', timeText: `最近：${h}小时前` }
+  }
+  if (d >= yesterdayStart) {
+    return { status: 'resting', label: '昨天有记录', timeText: '最近：一天前' }
+  }
+  const days = Math.floor(diffH / 24)
+  if (days < 5) {
+    return { status: 'resting', label: '近期有记录', timeText: `最近：${days}天前` }
+  }
+  return { status: 'no_record', label: '近期无记录', timeText: '最近：无记录' }
 }
 
 async function fetchData() {
@@ -219,7 +234,7 @@ onUnmounted(() => {
 .hero-title {
   font-family: var(--font-body);
   font-weight: var(--weight-extrabold);
-  font-size: 52px;
+  font-size: 60px;
   line-height: 1.08;
   color: var(--color-forest-ink);
   margin: 0 0 10px;
@@ -236,7 +251,7 @@ onUnmounted(() => {
   font-family: var(--font-body);
   font-weight: var(--weight-regular);
   font-size: 15px;
-  color: var(--color-whisper-gray);
+  color: #888;
   margin: 0;
   letter-spacing: 0.02em;
 }
@@ -272,7 +287,7 @@ onUnmounted(() => {
   font-family: var(--font-body);
   font-weight: var(--weight-medium);
   font-size: var(--text-caption);
-  color: var(--color-whisper-gray);
+  color: #888;
   margin-top: 8px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -307,7 +322,7 @@ onUnmounted(() => {
 .stats-sec-item em {
   font-style: normal;
   font-weight: var(--weight-regular);
-  color: var(--color-whisper-gray);
+  color: #888;
   margin-left: 2px;
 }
 .stats-sep {
@@ -339,11 +354,7 @@ onUnmounted(() => {
   margin-bottom: 32px;
 }
 /* Size differentiation */
-.location-cards > :nth-child(1) { flex: 1.25; }
-.location-cards > :nth-child(2),
-.location-cards > :nth-child(3) { flex: 1; }
-.location-cards > :nth-child(4),
-.location-cards > :nth-child(5) { flex: 0.85; }
+.location-cards > * { flex: 1; }
 /* Vertical offset — staggered like real sticky notes */
 .location-cards > :nth-child(even) {
   margin-top: 36px;
@@ -354,6 +365,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+  flex-wrap: nowrap;
 }
 .loc-emoji {
   font-size: 24px;
@@ -365,6 +377,7 @@ onUnmounted(() => {
   font-size: var(--text-body);
   color: var(--color-forest-ink);
   flex: 1;
+  white-space: nowrap;
 }
 
 /* Status indicator */
@@ -378,6 +391,8 @@ onUnmounted(() => {
   background: var(--color-cream-paper);
   padding: 2px 10px;
   border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .status-dot {
   width: 6px;
@@ -414,7 +429,8 @@ onUnmounted(() => {
   margin-top: 12px;
   font-family: var(--font-body);
   font-size: var(--text-caption);
-  color: var(--color-whisper-gray);
+  color: #666;
+  font-weight: var(--weight-medium);
 }
 
 /* Chart */

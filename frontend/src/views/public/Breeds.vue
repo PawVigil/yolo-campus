@@ -28,13 +28,15 @@
               :key="b.key"
               :stripe="b.detectCount > 0 ? (b.type === 'cat' ? 'mint' : 'sand') : 'none'"
               :class="['breed-card', b.type, { undetected: b.detectCount === 0 }]"
+              @click="openBreedDetail(b)"
+              style="cursor:pointer"
             >
               <div class="card-emoji">{{ b.emoji }}</div>
               <h3>{{ b.name_cn }}</h3>
               <p class="en-name">{{ b.en_display }}</p>
               <div class="badge-row">
-                <InkTag v-if="b.detectCount > 0" variant="ink">监测 {{ b.detectCount }} 次</InkTag>
-                <InkTag v-else variant="ghost">暂未监测到</InkTag>
+                <span v-if="b.detectCount > 0" class="badge-detected">监测 {{ b.detectCount }} 次</span>
+                <span v-else class="badge-none">监测 0 次</span>
               </div>
               <div class="card-divider"></div>
               <div class="attr"><span class="lbl">体型</span><InkTag variant="mint">{{ b.size }}</InkTag></div>
@@ -44,6 +46,35 @@
           </div>
         </template>
       </n-spin>
+
+      <!-- 品种详情弹窗 -->
+      <n-modal v-model:show="showDetail" preset="card" :title="detailBreed?.name_cn || '品种详情'" style="max-width: 600px" :mask-closable="true">
+        <template v-if="detailBreed">
+          <div class="detail-hero">
+            <img v-if="detailBreed.image_url" :src="detailBreed.image_url" class="detail-photo" alt="" />
+            <div v-else class="detail-photo-placeholder">{{ detailBreed.emoji }}</div>
+            <div class="detail-hero-info">
+              <div class="detail-emoji">{{ detailBreed.emoji }}</div>
+              <h3 class="detail-name">{{ detailBreed.name_cn }}</h3>
+              <p class="detail-en">{{ detailBreed.en_display }}</p>
+              <span v-if="detailBreed.detectCount > 0" class="badge-detected">监测 {{ detailBreed.detectCount }} 次</span>
+              <span v-else class="badge-none">监测 0 次</span>
+            </div>
+          </div>
+          <div class="detail-section" v-if="detailBreed.desc">
+            <h4>📖 品种介绍</h4>
+            <p>{{ detailBreed.desc }}</p>
+          </div>
+          <div class="detail-section">
+            <h4>📋 基本信息</h4>
+            <div class="detail-attrs">
+              <div class="detail-attr"><span class="da-lbl">体型</span><span>{{ detailBreed.size }}</span></div>
+              <div class="detail-attr"><span class="da-lbl">性格</span><span>{{ detailBreed.temperament }}</span></div>
+            </div>
+          </div>
+          <div class="detail-fact">💡 {{ detailBreed.fun_fact }}</div>
+        </template>
+      </n-modal>
     </n-layout-content>
   </div>
 </template>
@@ -88,6 +119,15 @@ const filteredBreeds = computed(() => activeTab.value === 'cat' ? cats.value : a
 const detectedCats = computed(() => cats.value.filter(b => b.detectCount > 0).length)
 const detectedDogs = computed(() => dogs.value.filter(b => b.detectCount > 0).length)
 
+// 品种详情弹窗
+const showDetail = ref(false)
+const detailBreed = ref(null)
+
+function openBreedDetail(breed) {
+  detailBreed.value = breed
+  showDetail.value = true
+}
+
 onMounted(async () => {
   error.value = false
   try {
@@ -123,35 +163,31 @@ onMounted(async () => {
 /* 品种卡片 — PaperCard 基础上微调 */
 .breed-card {
   transition: transform var(--transition-fast);
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: 280px;
 }
 .breed-card:hover {
   transform: translateY(-2px);
 }
 
-/* 未检测到的品种 — 虚线褪色 */
+/* 未检测到的品种 — 略淡但不灰 */
 .breed-card.undetected {
-  background: transparent !important;
-  border: 1.5px dashed var(--color-pencil-gray) !important;
-  border-radius: 4px 12px 12px 4px !important;
-  box-shadow: none !important;
+  opacity: 0.65;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
-.breed-card.undetected::before { display: none; }
 .breed-card.undetected:hover {
-  border-color: var(--color-forest-ink) !important;
-  background: rgba(26, 51, 0, 0.02) !important;
+  opacity: 0.85;
+  transform: translateY(-2px);
 }
-.breed-card.undetected .card-emoji { opacity: 0.35; filter: grayscale(1); }
-.breed-card.undetected h3 { color: var(--color-pencil-gray); }
-.breed-card.undetected .en-name { color: var(--color-whisper-gray); }
-.breed-card.undetected .badge-row,
-.breed-card.undetected .attr,
-.breed-card.undetected .fact { display: none; }
 
 /* 卡片内容 */
 .card-emoji { font-size: 48px; text-align: center; }
 .breed-card h3 { text-align: center; font-size: 18px; margin: 6px 0 2px; color: var(--color-forest-ink); }
 .en-name { text-align: center; font-size: 12px; color: var(--color-pencil-gray); margin: 0 0 4px; }
 .badge-row { text-align: center; margin: 8px 0; }
+.badge-detected { font-size: 12px; font-weight: 600; color: var(--color-forest-ink); background: var(--surface-highlighter); padding: 3px 12px; border-radius: var(--radius-full); }
+.badge-none { font-size: 12px; font-weight: 500; color: #888; background: rgba(0,0,0,0.03); padding: 3px 12px; border-radius: var(--radius-full); }
 
 /* 自定义分割线 */
 .card-divider {
@@ -164,4 +200,20 @@ onMounted(async () => {
 .lbl { color: var(--color-whisper-gray); font-size: 13px; min-width: 36px; }
 .attr-val { font-size: 14px; color: var(--color-forest-ink); }
 .fact { background: rgba(26, 51, 0, 0.03); border-radius: 6px; padding: 10px 12px; margin-top: 10px; font-size: 13px; color: var(--color-forest-ink); line-height: 1.5; }
+
+/* 品种详情弹窗 */
+.detail-hero { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+.detail-photo { width: 200px; height: 160px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+.detail-photo-placeholder { width: 200px; height: 160px; border-radius: 10px; background: var(--surface-cream); display: flex; align-items: center; justify-content: center; font-size: 64px; flex-shrink: 0; }
+.detail-hero-info { flex: 1; }
+.detail-emoji { font-size: 36px; }
+.detail-name { font-size: 22px; font-weight: 800; color: var(--color-forest-ink); margin: 4px 0; }
+.detail-en { font-size: 13px; color: #888; margin: 0 0 8px; }
+.detail-section { margin-top: 14px; }
+.detail-section h4 { font-size: 14px; font-weight: 700; color: var(--color-forest-ink); margin: 0 0 8px; }
+.detail-section p { font-size: 14px; color: #555; line-height: 1.7; margin: 0; max-height: 200px; overflow-y: auto; }
+.detail-attrs { display: flex; flex-direction: column; gap: 6px; }
+.detail-attr { display: flex; gap: 12px; font-size: 14px; color: var(--color-forest-ink); }
+.da-lbl { color: #888; min-width: 36px; }
+.detail-fact { background: #FFFBEB; border-radius: 8px; padding: 12px 14px; margin-top: 14px; font-size: 14px; color: #92400E; line-height: 1.6; }
 </style>

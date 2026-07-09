@@ -13,13 +13,12 @@
           <!-- 领奖台 — 冠亚季军 -->
           <div class="rankings-podium">
             <!-- 亚军 — 左 -->
-            <div class="podium-item podium-side podium-left">
+            <div class="podium-item podium-side podium-left" @click="openHomebody">
               <StickyNote color="var(--surface-mint)" :rotate="1.5">
-                <div class="rk-card">
+                <div class="rk-card" style="cursor:pointer">
                   <img src="/rankings/homebody.svg" alt="" class="rk-bg-img" />
                   <div class="rk-content">
                     <div class="rk-head">
-                      <span class="rk-medal">🥈</span>
                       <span class="rk-label">最佳宅猫</span>
                     </div>
                     <div class="rk-value-lg">{{ data.homebody?.breed || '暂无' }}</div>
@@ -35,9 +34,9 @@
             </div>
 
             <!-- 冠军 — 中 -->
-            <div class="podium-item podium-champion">
+            <div class="podium-item podium-champion" @click="openBreedTop5">
               <StickyNote color="var(--surface-highlighter)">
-                <div class="rk-card">
+                <div class="rk-card" style="cursor:pointer">
                   <img src="/rankings/most-seen.svg" alt="" class="rk-bg-img rk-bg-img--champion" />
                   <div class="rk-content">
                     <div class="rk-crown">👑</div>
@@ -55,13 +54,12 @@
             </div>
 
             <!-- 季军 — 右 -->
-            <div class="podium-item podium-side podium-right">
+            <div class="podium-item podium-side podium-right" @click="openRareTop5">
               <StickyNote color="var(--surface-blush)" :rotate="-1.5">
-                <div class="rk-card">
+                <div class="rk-card" style="cursor:pointer">
                   <img src="/rankings/rare.svg" alt="" class="rk-bg-img" />
                   <div class="rk-content">
                     <div class="rk-head">
-                      <span class="rk-medal">🥉</span>
                       <span class="rk-label">独行侠</span>
                     </div>
                     <div class="rk-value-lg">{{ data.rare?.breed || '暂无' }}</div>
@@ -77,9 +75,9 @@
             </div>
           </div>
 
-          <!-- 底部两卡 — 左窄右宽 -->
+          <!-- 底部两卡 — 左窄右宽（禁自带旋转hover，改纯上浮防抖动） -->
           <div class="rankings-bottom">
-            <StickyNote color="var(--surface-teal)" :rotate="0.4">
+            <StickyNote color="var(--surface-teal)" :hoverable="false" class="rk-bottom-card">
               <div class="rk-card">
                 <img src="/rankings/busiest.svg" alt="" class="rk-bg-img" />
                 <div class="rk-content">
@@ -98,7 +96,7 @@
               </div>
             </StickyNote>
 
-            <StickyNote color="var(--surface-sand)" :rotate="-0.3" class="rank-wide">
+            <StickyNote color="var(--surface-sand)" :hoverable="false" class="rk-bottom-card rank-wide">
               <div class="rk-card">
                 <img src="/rankings/best-time.svg" alt="" class="rk-bg-img" />
                 <div class="rk-content">
@@ -118,6 +116,64 @@
           </div>
         </template>
       </n-spin>
+
+      <!-- 品种 TOP5 弹窗（出镜之王 / 独行侠 共用） -->
+      <n-modal v-model:show="showBreedModal" preset="card" :title="breedModalTitle" style="max-width: 560px" :mask-closable="true">
+        <n-spin :show="breedLoading">
+          <n-empty v-if="!breedLoading && breedTop5.length === 0" description="暂无数据" />
+          <template v-else-if="breedTop5.length > 0">
+            <!-- #1 冠军 -->
+            <div class="bt5-hero">
+              <img v-if="getBreedImage(breedTop5[0].breed)" :src="getBreedImage(breedTop5[0].breed)" class="bt5-hero-photo" />
+              <span v-else class="bt5-hero-emoji">{{ breedModalTitle.includes('稀有') ? '🦸' : '👑' }}</span>
+              <div>
+                <div class="bt5-hero-breed">{{ breedTop5[0].breed }}</div>
+                <div class="bt5-hero-stat">出现 {{ breedTop5[0].count }} 次</div>
+              </div>
+            </div>
+            <div class="home-divider"></div>
+            <!-- TOP5 列表 -->
+            <div class="breed-top5-list">
+              <div v-for="(item, idx) in breedTop5" :key="item.breed" class="bt5-item">
+                <span class="bt5-rank" :class="`bt5-r${idx + 1}`">#{{ idx + 1 }}</span>
+                <span class="bt5-name">{{ item.breed }}</span>
+                <div class="bt5-bar-wrap">
+                  <div class="bt5-bar" :class="`bt5-b${idx + 1}`" :style="{ width: (item.count / breedMax * 100) + '%' }">
+                    <span class="bt5-label">{{ item.count }} 次</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </n-spin>
+      </n-modal>
+
+      <!-- 最佳宅猫详情弹窗 -->
+      <n-modal v-model:show="showHomeModal" preset="card" title="🏠 最佳宅猫 TOP5" style="max-width: 560px" :mask-closable="true">
+        <div v-if="data?.homebody" class="home-detail">
+          <div class="home-hero">
+            <img v-if="getBreedImage(data.homebody.breed)" :src="getBreedImage(data.homebody.breed)" class="bt5-hero-photo" />
+            <span v-else class="home-emoji">🐱</span>
+            <div>
+              <div class="home-breed">{{ data.homebody.breed }}</div>
+              <div class="home-loc">📍 常驻 {{ data.homebody.location }} · 集中度 {{ ((data.homebody.percentage ?? 0) * 100).toFixed(0) }}%</div>
+            </div>
+          </div>
+          <div class="home-divider"></div>
+        </div>
+        <div class="breed-top5-list">
+          <div v-for="(item, idx) in (data?.homebody_top5 || [])" :key="item.breed" class="bt5-item">
+            <span class="bt5-rank" :class="`bt5-r${idx + 1}`">#{{ idx + 1 }}</span>
+            <span class="bt5-name">{{ item.breed }}</span>
+            <span class="bt5-loc">{{ item.location }}</span>
+            <div class="bt5-bar-wrap">
+              <div class="bt5-bar" :class="`bt5-b${idx + 1}`" :style="{ width: ((item.percentage ?? 0) * 100).toFixed(0) + '%' }">
+                <span class="bt5-label">{{ ((item.percentage ?? 0) * 100).toFixed(0) }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </n-modal>
     </n-layout-content>
   </div>
 </template>
@@ -129,19 +185,77 @@ import PublicNav from '@/components/PublicNav.vue'
 import LocationBadge from '@/components/LocationBadge.vue'
 import StickyNote from '@/components/StickyNote.vue'
 import InkTag from '@/components/InkTag.vue'
-import { getRankings } from '@/api/public.js'
+import { getRankings, getBreedStats } from '@/api/public.js'
 
 const router = useRouter()
 const loading = ref(true)
 const data = ref(null)
 const error = ref(false)
 
+// 品种 TOP5 弹窗（复用于出镜之王 / 独行侠）
+const showBreedModal = ref(false)
+const breedLoading = ref(false)
+const breedTop5 = ref([])
+const breedMax = ref(1)
+const breedModalTitle = ref('')
 
+function pickTop5(stats, asc = false) {
+  const sorted = Object.entries(stats)
+    .filter(([, c]) => c > 0)
+    .sort((a, b) => asc
+      ? (a[1] - b[1] || a[0].localeCompare(b[0], 'zh'))
+      : (b[1] - a[1] || a[0].localeCompare(b[0], 'zh')))
+  return sorted.slice(0, 5).map(([breed, count]) => ({ breed, count }))
+}
+
+async function openBreedTop5() {
+  breedModalTitle.value = '🏅 品种出现次数 TOP5'
+  showBreedModal.value = true
+  breedLoading.value = true
+  try {
+    const res = await getBreedStats()
+    breedTop5.value = pickTop5(res.stats || {}, false)
+    breedMax.value = breedTop5.value[0]?.count || 1
+  } catch (e) { console.error(e) }
+  finally { breedLoading.value = false }
+}
+
+// 最佳宅猫详情弹窗 — 集中度 TOP5
+const showHomeModal = ref(false)
+function openHomebody() { showHomeModal.value = true }
+
+// 品种图片查找
+const breedImages = ref({})
+function getBreedImage(name) { return breedImages.value[name] || '' }
+
+// 独行侠弹窗 — 稀有品种 TOP5
+async function openRareTop5() {
+  breedModalTitle.value = '🦸 稀有品种 TOP5'
+  showBreedModal.value = true
+  breedLoading.value = true
+  try {
+    const res = await getBreedStats()
+    breedTop5.value = pickTop5(res.stats || {}, true)
+    breedMax.value = breedTop5.value[breedTop5.value.length - 1]?.count || 1
+  } catch (e) { console.error(e) }
+  finally { breedLoading.value = false }
+}
 
 onMounted(async () => {
   error.value = false
   try {
-    data.value = await getRankings()
+    const [rankings, breedInfo] = await Promise.all([
+      getRankings(),
+      fetch('/breed_info.json').then(r => r.json()).catch(() => ({})),
+    ])
+    data.value = rankings
+    const imgs = {}
+    for (const [key, info] of Object.entries(breedInfo)) {
+      if (info.name_cn && info.image_url) {
+        imgs[info.name_cn] = info.image_url
+      }
+    }
+    breedImages.value = imgs
   } catch (e) {
     console.error('获取排行榜失败', e)
     error.value = true
@@ -155,7 +269,7 @@ onMounted(async () => {
 .rankings-page { min-height: 100vh; background: var(--color-cream-paper); }
 .rankings-content { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
 .page-title { text-align: left; font-size: 28px; margin-bottom: 4px; color: var(--color-forest-ink); }
-.page-subtitle { text-align: left; color: var(--color-whisper-gray); margin-bottom: 32px; }
+.page-subtitle { text-align: left; color: #888; margin-bottom: 32px; }
 
 /* Podium */
 .rankings-podium {
@@ -176,6 +290,8 @@ onMounted(async () => {
 .rankings-bottom { display: flex; gap: 16px; align-items: stretch; }
 .rankings-bottom > * { flex: 1; }
 .rankings-bottom > .rank-wide { flex: 1.6; }
+.rk-bottom-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.rk-bottom-card:hover { transform: translateY(-6px); box-shadow: 3px 6px 0 rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.1); }
 
 /* ================================
    rk-card — 带插图的卡片容器
@@ -258,7 +374,7 @@ onMounted(async () => {
 }
 
 /* 副标题 */
-.rk-sub { font-size: 12px; color: var(--color-whisper-gray); margin-bottom: 14px; }
+.rk-sub { font-size: 12px; color: #888; margin-bottom: 14px; }
 
 /* 迷你数据条 */
 .rk-bar {
@@ -284,7 +400,38 @@ onMounted(async () => {
 .rk-foot--center { justify-content: center; }
 .rk-pct-mono { font-family: var(--font-mono); font-size: 13px; font-weight: var(--weight-semibold); color: var(--color-forest-ink); font-feature-settings: 'tnum'; }
 .rk-rare-note { font-size: 12px; color: var(--color-terracotta); font-weight: var(--weight-medium); }
-.rk-tip { font-size: 12px; color: var(--color-whisper-gray); }
+.rk-tip { font-size: 12px; color: #888; }
+
+/* ================================
+   品种 TOP5 弹窗
+   ================================ */
+.breed-top5-list { display: flex; flex-direction: column; gap: 14px; padding: 4px 0; }
+.bt5-item { display: flex; align-items: center; gap: 10px; }
+.bt5-rank { font-weight: 800; font-size: 15px; width: 34px; }
+.bt5-r1 { color: #e8a840; } .bt5-r2 { color: #9a9a9a; } .bt5-r3 { color: #c08040; }
+.bt5-name { font-size: 14px; font-weight: 600; color: var(--color-forest-ink); width: 80px; flex-shrink: 0; }
+.bt5-loc { font-size: 12px; color: #888; width: 48px; flex-shrink: 0; text-align: right; }
+.bt5-bar-wrap { flex: 1; height: 24px; background: var(--surface-cream); border-radius: 4px; overflow: hidden; }
+.bt5-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); min-width: 40px; }
+.bt5-b1 { background: linear-gradient(90deg, #e8a840, #f5c76a); }
+.bt5-b2 { background: linear-gradient(90deg, #9a9a9a, #c0c0c0); }
+.bt5-b3 { background: linear-gradient(90deg, #c08040, #d4a060); }
+.bt5-b4 { background: linear-gradient(90deg, #2d5016, #4a7a2e); }
+.bt5-b5 { background: linear-gradient(90deg, #3a6020, #558a32); }
+.bt5-label { font-size: 12px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.bt5-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 4px; }
+.bt5-hero-emoji { font-size: 48px; flex-shrink: 0; }
+.bt5-hero-photo { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+.bt5-hero-breed { font-size: 24px; font-weight: 800; color: var(--color-forest-ink); }
+.bt5-hero-stat { font-size: 14px; color: #888; margin-top: 2px; }
+
+/* 最佳宅猫弹窗 */
+.home-detail { padding: 4px 0; }
+.home-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.home-emoji { font-size: 48px; }
+.home-breed { font-size: 24px; font-weight: 800; color: var(--color-forest-ink); }
+.home-loc { font-size: 14px; color: #888; margin-top: 2px; }
+.home-divider { height: 1px; background: var(--color-pencil-gray); margin: 12px 0 18px; }
 
 @media (max-width: 768px) {
   .rankings-podium { flex-direction: column; gap: 16px; }
