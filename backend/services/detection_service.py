@@ -129,15 +129,14 @@ class DetectionService:
             page_size = min(max(1, filters.page_size), 50)
             offset = (page - 1) * page_size
 
-            rows = conn.execute(
-                f"""SELECT d.*, l.name as location_name
+            sql = f"""SELECT d.*, l.name as location_name
                     FROM detection d
                     JOIN location l ON d.location_id = l.id
                     WHERE {where_sql}
-                    ORDER BY d.created_at DESC
-                    LIMIT ? OFFSET ?""",
-                params + [page_size, offset],
-            ).fetchall()
+                    ORDER BY d.detect_time DESC
+                    LIMIT ? OFFSET ?"""
+            print(f'[DEBUG] page={page} offset={offset} sql={sql} params={params + [page_size, offset]}')
+            rows = conn.execute(sql, params + [page_size, offset]).fetchall()
 
             items = []
             for r in rows:
