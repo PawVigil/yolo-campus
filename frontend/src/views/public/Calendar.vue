@@ -79,7 +79,7 @@
             <text
               :x="pt.x" :y="pt.y + 1"
               text-anchor="middle" dominant-baseline="central"
-              :font-size="10 + pt.depth * 6"
+              :font-size="16 + pt.depth * 12"
               :font-weight="700"
               fill="#1a3300"
               font-family="'Roboto Mono', monospace"
@@ -229,7 +229,7 @@ function genInkPoints(count) {
     const depth = perspectiveDepth(t)
     const y = vanishY + depth * totalRange
     const scale = 0.06 + depth * 0.94
-    const halfW = 1.5 + scale * 13
+    const halfW = (1.5 + scale * 13) * 5
     return { x: meanderX(t), y, halfW, scale, t }
   })
 }
@@ -308,7 +308,7 @@ const decorPoints = computed(() => {
     const nx = -dy / len
     const ny = dx / len
     const side = (i % 2 === 0) ? 1 : -1
-    const offsetDist = p.halfW * (1.6 + seed * 2)
+    const offsetDist = p.halfW + 18 + seed * 12
     const x = p.x + nx * offsetDist * side
     const y = p.y + ny * offsetDist * side
     const depth = p.scale
@@ -319,6 +319,109 @@ const decorPoints = computed(() => {
       opacity: 0.12 + depth * 0.22,
     }
   })
+})
+
+// ══ 植物速写（背景装饰）══
+// 蕨叶
+function fernPath(x, y, size, rot) {
+  const s = size
+  const r = rot * Math.PI / 180
+  const cos = Math.cos(r), sin = Math.sin(r)
+  const tx = (dx, dy) => ({ x: x + dx * cos - dy * sin, y: y + dx * sin + dy * cos })
+  const stem = `M ${tx(0,0).x} ${tx(0,0).y} L ${tx(0,-s).x} ${tx(0,-s).y}`
+  const leaves = []
+  for (let i = 1; i <= 5; i++) {
+    const ty = -s * (i / 6)
+    const leafLen = s * 0.35 * (1 - i / 7)
+    const l = tx(-leafLen, ty + s * 0.03)
+    const r2 = tx(leafLen, ty + s * 0.03)
+    const tip = tx(0, ty)
+    leaves.push(`M ${tip.x} ${tip.y} Q ${l.x} ${l.y} ${tx(-leafLen * 0.5, ty - s * 0.04).x} ${tx(-leafLen * 0.5, ty - s * 0.04).y}`)
+    leaves.push(`M ${tip.x} ${tip.y} Q ${r2.x} ${r2.y} ${tx(leafLen * 0.5, ty - s * 0.04).x} ${tx(leafLen * 0.5, ty - s * 0.04).y}`)
+  }
+  return stem + ' ' + leaves.join(' ')
+}
+// 草丛
+function grassPath(x, y, size, rot) {
+  const s = size
+  const r = rot * Math.PI / 180
+  const cos = Math.cos(r), sin = Math.sin(r)
+  const tx = (dx, dy) => ({ x: x + dx * cos - dy * sin, y: y + dx * sin + dy * cos })
+  const blades = []
+  for (let i = -2; i <= 2; i++) {
+    const bx = i * s * 0.15
+    const lean = i * s * 0.12
+    const tip = tx(bx + lean, -s)
+    const base = tx(bx, 0)
+    const cp = tx(bx + lean * 0.5, -s * 0.6)
+    blades.push(`M ${base.x} ${base.y} Q ${cp.x} ${cp.y} ${tip.x} ${tip.y}`)
+  }
+  return blades.join(' ')
+}
+// 蒲公英
+function dandelionPath(x, y, size, rot) {
+  const s = size
+  const r = rot * Math.PI / 180
+  const cos = Math.cos(r), sin = Math.sin(r)
+  const tx = (dx, dy) => ({ x: x + dx * cos - dy * sin, y: y + dx * sin + dy * cos })
+  const stem = `M ${tx(0,0).x} ${tx(0,0).y} L ${tx(0,-s*0.7).x} ${tx(0,-s*0.7).y}`
+  const seeds = []
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2
+    const len = s * 0.35
+    const tip = tx(Math.cos(a) * len, -s * 0.7 + Math.sin(a) * len)
+    const center = tx(0, -s * 0.7)
+    seeds.push(`M ${center.x} ${center.y} L ${tip.x} ${tip.y}`)
+  }
+  return stem + ' ' + seeds.join(' ')
+}
+
+const plantDecorations = [
+  { t: 0.06, side: -1, dist: 3.5, type: 'fern', size: 55, rot: -15 },
+  { t: 0.18, side: 1, dist: 4.0, type: 'grass', size: 40, rot: 10 },
+  { t: 0.30, side: -1, dist: 4.5, type: 'dandelion', size: 45, rot: -20 },
+  { t: 0.40, side: 1, dist: 3.8, type: 'fern', size: 50, rot: 15 },
+  { t: 0.52, side: -1, dist: 4.2, type: 'grass', size: 35, rot: -8 },
+  { t: 0.65, side: 1, dist: 3.5, type: 'dandelion', size: 42, rot: 12 },
+  { t: 0.72, side: -1, dist: 4.0, type: 'grass', size: 38, rot: -18 },
+  { t: 0.88, side: 1, dist: 3.8, type: 'fern', size: 48, rot: 20 },
+]
+
+const plantPaths = computed(() => {
+  const pts = pointsCache.value
+  if (pts.length < 10) return []
+  return plantDecorations.map(p => {
+    const idx = Math.round(p.t * (pts.length - 1))
+    const pt = pts[Math.min(idx, pts.length - 1)]
+    const next = pts[Math.min(idx + 1, pts.length - 1)]
+    const dx = next.x - pt.x
+    const dy = next.y - pt.y
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = -dy / len
+    const ny = dx / len
+    const x = pt.x + nx * pt.halfW * p.dist * p.side
+    const y = pt.y + ny * pt.halfW * p.dist * p.side
+    let d = ''
+    if (p.type === 'fern') d = fernPath(x, y, p.size, p.rot)
+    else if (p.type === 'grass') d = grassPath(x, y, p.size, p.rot)
+    else d = dandelionPath(x, y, p.size, p.rot)
+    return { d, opacity: 0.12 + pt.scale * 0.15 }
+  })
+})
+
+// ══ 田野笔记统计 ══
+const fieldStats = computed(() => {
+  const days = calendarDays.value.filter(d => d.inMonth)
+  const active = days.filter(d => d.hasAnimals && !d.isFuture)
+  const catDays = active.filter(d => d.hasCat).length
+  const dogDays = active.filter(d => d.hasDog).length
+  const bothDays = active.filter(d => d.hasCat && d.hasDog).length
+  let mostActiveDate = ''
+  if (active.length) {
+    // 取第一个有记录的日期作为示例
+    mostActiveDate = active[0].date.slice(5) // MM-DD
+  }
+  return { activeDays: active.length, catDays, dogDays, bothDays, mostActiveDate }
 })
 
 const inkPath = computed(() => {
@@ -387,7 +490,7 @@ const dayPoints = computed(() => {
     const y = vanishY + depth * totalRange
     const scale = 0.06 + depth * 0.94
     const x = meanderX(t)
-    const r = 16 + scale * 18
+    const r = 22 + scale * 24
     const leaf = leafPath(x, y, r, day.dayNum + i * 1.3)
     return { x, y, r, depth: scale, day, blob: leaf.d, vein: leaf.vein }
   })
@@ -440,12 +543,47 @@ onMounted(() => fetchCalendar())
 
 <style scoped>
 .calendar-page { min-height: 100vh; background: var(--color-cream-paper); }
-.cal-content { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+.cal-content { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; }
 .month-header { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
 .month-title { margin: 0; font-size: 22px; color: var(--color-forest-ink); }
 
-.river-wrap { position: relative; width: 100%; }
+.calendar-main { display: flex; gap: 32px; align-items: flex-start; }
+.river-wrap { position: relative; flex: 1; min-width: 0; }
 .river-svg { width: 100%; height: auto; display: block; }
+
+/* 田野笔记 */
+.field-notes {
+  width: 180px; flex-shrink: 0;
+  background: rgba(26,51,0,0.02);
+  border: 1px solid rgba(26,51,0,0.1);
+  border-radius: 6px;
+  padding: 20px 16px;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  margin-top: 20px;
+}
+.fn-title {
+  font-size: 15px; font-weight: 700; color: #1a3300;
+  margin-bottom: 12px; letter-spacing: 2px;
+  text-align: center;
+}
+.fn-line {
+  height: 1px; background: rgba(26,51,0,0.08); margin: 10px 0;
+}
+.fn-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 2px 0;
+}
+.fn-label {
+  font-size: 12px; color: rgba(26,51,0,0.5);
+}
+.fn-value {
+  font-size: 18px; font-weight: 700; color: #1a3300;
+  font-family: 'Roboto Mono', monospace;
+}
+.fn-value--sm { font-size: 13px; font-weight: 500; }
+.fn-unit { font-size: 11px; font-weight: 400; color: rgba(26,51,0,0.4); margin-left: 2px; }
+.fn-sketch { margin-top: 14px; text-align: center; }
+.fn-sketch-svg { width: 80px; height: 60px; }
 
 .node-today { animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse {
