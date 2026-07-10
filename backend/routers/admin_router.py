@@ -97,8 +97,6 @@ async def save_detection(
     user: dict = Depends(get_current_user),
 ):
     """保存检测记录到数据库（使用 B1 预览的确认结果，不重新检测）"""
-    from services.dashboard_service import clear_breed_count_cache
-    clear_breed_count_cache()
     # 从请求体解析已确认的 animals
     from models.detection import AnimalResult, Box as BBox
     raw = json.loads(req.result_json)

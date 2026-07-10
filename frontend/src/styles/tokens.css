@@ -8,7 +8,7 @@
   /* ========================================
      Colors — Core
      ======================================== */
-  --color-forest-ink: #1a3300;
+  --color-forest-ink: #3E5B46;
   --color-highlighter-yellow: #ffe95c;
   --color-cream-paper: #fcfaf5;
   --color-pencil-gray: #b6b6b6;
@@ -125,42 +125,66 @@
   --transition-slow: 300ms ease;
 
   /* ========================================
-     Notice Board — 公告栏视觉体系
-     材质：木板 + 羊皮纸 + 墨水 + 铜钉
+     Notice Board — 公告栏视觉体系（清爽校园版）
+     材质：浅榉木框 + 暖米底板 + 奶白纸 + 森林绿字 + 暖橘图钉
      ======================================== */
 
-  /* Wood — 木板三层 */
-  --color-wood-dark: #69523A;
-  --color-wood-base: #846B4B;
-  --color-wood-light: #9A8663;
+  /* 全局底色 */
+  --color-page-bg: #FCF8F1;
 
-  /* Paper — 羊皮纸 */
-  --color-paper-main: #D3C6A8;
-  --color-paper-old: #C0B08D;
-  --color-paper-edge: #A48E68;
-  --color-paper-hover: #DDD0B2;
+  /* 公告栏结构色 */
+  --color-board-frame: #E4C59B;
+  --color-board-frame-dark: #CFA97C;
+  --color-board-bg: #F5E9D7;
+  --color-board-line: #E8D9C2;
 
-  /* Ink — 墨水 */
-  --color-ink-black: #201917;
-  --color-ink-dark: #3A2A1F;
-  --color-ink-light: #5C4734;
+  /* Wood — 木板（浅榉木） */
+  --color-wood-dark: #CFA97C;
+  --color-wood-base: #E4C59B;
+  --color-wood-light: #EED6B5;
+
+  /* Paper — 奶白纸 */
+  --color-cream-paper: #FCF7ED;
+  --color-green-paper: #E3DFC1;
+  --color-paper-main: #FCF7ED;
+  --color-paper-old: #F5EFE3;
+  --color-paper-edge: #E6DED0;
+  --color-paper-hover: #FFFDF8;
+
+  /* Ink — 森林绿 + 暖棕灰 */
+  --color-forest-ink: #2F4B26;
+  --color-ink-black: #2F4B26;
+  --color-text-primary: #4A4238;
+  --color-ink-dark: #4A4238;
+  --color-text-secondary: #8A7F6F;
+  --color-ink-light: #8A7F6F;
+  --color-ink-wash: rgba(47, 75, 38, 0.06);
 
   /* Light & Shadow */
-  --color-sunlight: rgba(255,245,220,.35);
-  --shadow-board-soft: rgba(0,0,0,.18);
-  --shadow-board-deep: rgba(0,0,0,.35);
+  --color-sunlight: rgba(255,245,220,.2);
+  --shadow-card: 0 4px 12px rgba(90, 70, 45, 0.12);
+  --shadow-board: 0 8px 24px rgba(90, 70, 45, 0.18);
+  --shadow-board-soft: rgba(90, 70, 45, 0.12);
+  --shadow-board-deep: rgba(90, 70, 45, 0.18);
 
-  /* Accent — 天空蓝点缀 */
-  --color-sky: #507E95;
+  /* Accent — 砖红印章 */
+  --color-accent-red: #C98E7A;
+  --color-stamp-red: #C98E7A;
 
-  /* Status — 提醒等级（印章色） */
-  --color-notice-normal: #8A5A3B;
-  --color-notice-warning: #C98A2D;
+  /* Status — 提醒等级 */
+  --color-notice-normal: #3D5A45;
+  --color-notice-warning: #D69146;
   --color-notice-danger: #A03D2B;
-  --color-notice-archive: #7A7A72;
+  --color-notice-archive: #8A7F6F;
 
-  /* Copper Pin */
-  --color-copper-pin: #B87333;
-  --color-copper-pin-light: #D4944A;
-  --color-copper-pin-dark: #8B5E2A;
+  /* Pin — 暖橘图钉 */
+  --color-pin-main: #F0AF66;
+  --color-pin-highlight: #F8D2A3;
+  --color-pin-dark: #D69146;
+  --color-copper-pin: #F0AF66;
+  --color-copper-pin-light: #F8D2A3;
+  --color-copper-pin-dark: #D69146;
+
+  /* 分割线 */
+  --color-divider: #E6DED0;
 }
